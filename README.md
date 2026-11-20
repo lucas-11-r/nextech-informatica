@@ -80,7 +80,7 @@ projeto_final/
 ├── migration.js            # cria tabelas e carrega o catálogo
 ├── data/produtos.js        # fonte única dos 50 produtos
 ├── data/imagens-drive.js   # mapa arquivo -> ID no Google Drive
-├── imagens-produtos/       # imagens externas (ignoradas pelo Git)
+├── imagens-produtos/       # imagens dos produtos (SVGs + PNGs p/ Drive)
 ├── src/
 │   ├── produtos.js         # catálogo + rota de imagens
 │   ├── clientes.js         # cadastro, login e perfil
@@ -567,8 +567,8 @@ module.exports = {
 A chave pode ser o nome com ou sem extensão. Se preferir, preencha o arquivo à mão
 com o ID de cada arquivo (trecho entre `/d/` e `/view` na URL).
 
-As imagens locais podem ficar em `imagens-produtos` (ou no caminho definido em
-`IMAGENS_DIR`). Essa pasta está no `.gitignore` e não é enviada ao GitHub.
+As imagens locais ficam em `imagens-produtos` (ou no caminho definido em
+`IMAGENS_DIR`). Essa pasta é versionada no repositório.
 
 ---
 
