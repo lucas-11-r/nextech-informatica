@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Meu carrinho de compras na NexTech Informática.">
+    <title>Carrinho | NexTech Informática</title>
+    <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body data-page="carrinho">
+    <div id="site-header"></div>
+
+    <main class="container-nextech">
+        <div class="carrinho-wrap">
+            <nav class="breadcrumb-nextech" aria-label="breadcrumb">
+                <a href="index.html">Início</a><span>/</span><span>Carrinho</span>
+            </nav>
+
+            <div class="secao-cabecalho mt-2 mb-0">
+                <div>
+                    <h1 style="font-size:clamp(25px,3vw,34px);font-weight:800;letter-spacing:-.03em;margin:0 0 4px">
+                        Meu carrinho
+                    </h1>
+                    <p id="carrinho-subtitulo">Confira os itens antes de finalizar a compra.</p>
+                </div>
+                <a href="produtos.html" class="link-ver-tudo">
+                    <i class="bi bi-arrow-left"></i> Continuar comprando
+                </a>
+            </div>
+
+            <div id="carrinho-conteudo">
+                <div class="carrinho-grid">
+                    <div class="carrinho-lista">
+                        <div class="carrinho-item">
+                            <div class="skeleton" style="width:92px;height:76px"></div>
+                            <div>
+                                <div class="skeleton mb-2" style="height:14px;width:70%"></div>
+                                <div class="skeleton" style="height:12px;width:40%"></div>
+                            </div>
+                            <div class="skeleton" style="height:38px;width:100px"></div>
+                        </div>
+                    </div>
+                    <div class="resumo-carrinho">
+                        <div class="skeleton mb-3" style="height:18px;width:55%"></div>
+                        <div class="skeleton mb-2" style="height:12px"></div>
+                        <div class="skeleton mb-2" style="height:12px"></div>
+                        <div class="skeleton" style="height:12px;width:70%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="site-footer"></div>
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <!-- Modal de login necessário -->
+    <div class="modal fade" id="modal-login" tabindex="-1" aria-labelledby="modal-login-titulo" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border:0;border-radius:20px">
+                <div class="modal-body p-4 text-center">
+                    <div class="servico-icone mx-auto mb-3"><i class="bi bi-person-lock"></i></div>
+                    <h2 id="modal-login-titulo" style="font-size:20px;font-weight:800">Entre para finalizar</h2>
+                    <p class="texto-muted" style="font-size:13px">
+                        Você precisa estar logado para concluir a compra. Seu carrinho será mantido.
+                    </p>
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="#" class="btn-nextech" id="modal-btn-login">Entrar na minha conta</a>
+                        <a href="cadastro.html" class="btn-outline-nextech">Criar uma conta</a>
+                        <button type="button" class="btn btn-link texto-muted" data-bs-dismiss="modal" style="font-size:12.5px">
+                            Continuar comprando
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de checkout: entrega, pagamento e confirmação do pedido -->
+    <div class="modal fade" id="modal-pedido" tabindex="-1" aria-labelledby="modal-pedido-titulo" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="border:0;border-radius:20px">
+                <form id="form-checkout" novalidate>
+                    <div class="modal-body p-4">
+                        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                            <div>
+                                <h2 id="modal-pedido-titulo" style="font-size:20px;font-weight:800;margin:0 0 4px">
+                                    Finalizar compra
+                                </h2>
+                                <p class="texto-muted mb-0" style="font-size:12.5px">
+                                    Confira os itens, informe a entrega e escolha o pagamento.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+
+                        <div class="checkout-cliente" id="checkout-cliente"></div>
+                        <div class="auth-erro" id="checkout-alerta" role="alert"></div>
+
+                        <div class="checkout-grid">
+                            <div>
+                                <h3 class="checkout-titulo"><span>1</span> Dados de entrega</h3>
+
+                                <div class="checkout-campos">
+                                    <div class="checkout-campo curto">
+                                        <label for="checkout-cep">CEP</label>
+                                        <input type="text" id="checkout-cep" inputmode="numeric" maxlength="9"
+                                               placeholder="00000-000" autocomplete="postal-code">
+                                    </div>
+                                    <div class="checkout-campo">
+                                        <label for="checkout-endereco">Endereço</label>
+                                        <input type="text" id="checkout-endereco" placeholder="Rua, avenida..."
+                                               autocomplete="street-address">
+                                    </div>
+                                    <div class="checkout-campo curto">
+                                        <label for="checkout-numero">Número</label>
+                                        <input type="text" id="checkout-numero" placeholder="123">
+                                    </div>
+                                    <div class="checkout-campo">
+                                        <label for="checkout-complemento">Complemento <small>(opcional)</small></label>
+                                        <input type="text" id="checkout-complemento" placeholder="Apto, bloco...">
+                                    </div>
+                                    <div class="checkout-campo">
+                                        <label for="checkout-bairro">Bairro</label>
+                                        <input type="text" id="checkout-bairro" placeholder="Centro">
+                                    </div>
+                                    <div class="checkout-campo">
+                                        <label for="checkout-cidade">Cidade</label>
+                                        <input type="text" id="checkout-cidade" placeholder="Ponta Grossa">
+                                    </div>
+                                    <div class="checkout-campo curto">
+                                        <label for="checkout-uf">UF</label>
+                                        <input type="text" id="checkout-uf" maxlength="2" placeholder="PR"
+                                               style="text-transform:uppercase">
+                                    </div>
+                                </div>
+
+                                <h3 class="checkout-titulo mt-4"><span>2</span> Forma de pagamento</h3>
+                                <div class="pagamento-opcoes">
+                                    <label class="pagamento-opcao">
+                                        <input type="radio" name="pagamento" value="pix" checked>
+                                        <i class="bi bi-qr-code"></i>
+                                        <strong>PIX</strong>
+                                        <small>Aprovação imediata</small>
+                                    </label>
+                                    <label class="pagamento-opcao">
+                                        <input type="radio" name="pagamento" value="cartao">
+                                        <i class="bi bi-credit-card"></i>
+                                        <strong>Cartão</strong>
+                                        <small>Até 12x sem juros</small>
+                                    </label>
+                                    <label class="pagamento-opcao">
+                                        <input type="radio" name="pagamento" value="boleto">
+                                        <i class="bi bi-upc-scan"></i>
+                                        <strong>Boleto</strong>
+                                        <small>Vence em 2 dias</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <aside class="checkout-resumo">
+                                <h3 class="checkout-titulo"><span>3</span> Resumo do pedido</h3>
+                                <div id="pedido-itens" class="mb-2"></div>
+                                <div class="resumo-totais" id="pedido-totais"></div>
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn-nextech" id="btn-confirmar-pedido">
+                                        <i class="bi bi-check2-circle"></i> Confirmar pedido
+                                    </button>
+                                    <button type="button" class="btn-outline-nextech" data-bs-dismiss="modal">
+                                        Voltar ao carrinho
+                                    </button>
+                                </div>
+                                <p class="checkout-seguro">
+                                    <i class="bi bi-shield-check"></i> Seus dados são usados apenas para este pedido.
+                                </p>
+                            </aside>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/carrinho.js"></script>
+</body>
+</html>

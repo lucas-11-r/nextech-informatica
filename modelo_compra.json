@@ -1,0 +1,7 @@
+{
+  "itens": [
+    { "produto_id": 1, "quantidade": 2 },
+    { "produto_id": 12, "quantidade": 1 }
+  ],
+  "cupom": "NEXTECH10"
+}

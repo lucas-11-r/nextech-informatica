@@ -1,0 +1,9 @@
+node_modules/
+.env
+_backup/
+imagens-produtos/
+site/assets/img/produtos/
+*.log
+*.pid
+.DS_Store
+Thumbs.db

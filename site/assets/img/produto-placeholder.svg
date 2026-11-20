@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Imagem indisponível">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#061a2e"/>
+            <stop offset="1" stop-color="#0b3b6f"/>
+        </linearGradient>
+    </defs>
+    <rect width="800" height="600" fill="url(#bg)"/>
+    <circle cx="400" cy="280" r="92" fill="none" stroke="#22d3ee" stroke-width="10" opacity=".8"/>
+    <path d="M355 280h90M400 235v90" stroke="#22d3ee" stroke-width="10" stroke-linecap="round"/>
+    <text x="400" y="430" fill="#22d3ee" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" text-anchor="middle">NEXTECH</text>
+    <text x="400" y="468" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="18" text-anchor="middle">Imagem indisponível</text>
+</svg>

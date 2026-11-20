@@ -1,0 +1,30 @@
+# Copie este arquivo para ".env" e preencha com os dados do seu MySQL.
+# O arquivo .env não deve ser enviado para o repositório.
+
+API_PORT=3000
+
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=sua_senha_do_mysql
+DB_DATABASE=nextech
+
+# Use uma chave longa e aleatória. Exemplo de geração:
+# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET=coloque_uma_chave_longa_e_aleatoria
+JWT_EXPIRES_IN=7d
+
+# Pasta externa com as imagens dos produtos (fora do GitHub).
+# Se não existir, o servidor usa o placeholder.
+IMAGENS_DIR=imagens-produtos
+
+# Google Drive: tamanho da miniatura e tempo máximo de espera
+GOOGLE_DRIVE_IMAGE_SIZE=w1200
+GOOGLE_DRIVE_TIMEOUT_MS=8000
+
+# Pasta do Google Drive que guarda as imagens (usada por npm run drive:sync)
+GOOGLE_DRIVE_FOLDER_ID=
+
+# Opcional e recomendado: chave de API do Google Drive para listar a pasta.
+# Sem ela o script tenta o embeddedfolderview, que o Google pode devolver vazio.
+GOOGLE_DRIVE_API_KEY=
