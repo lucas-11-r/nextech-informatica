@@ -14,27 +14,17 @@ const router = express.Router()
 const CAMPOS = `id, nome, descricao, categoria, marca, preco, preco_antigo,
     estoque, destaque, caminho_img, quantidade_img, avaliacao, avaliacoes`
 
-const DIR_IMAGENS = path.resolve(
-    process.env.IMAGENS_DIR || path.join(__dirname, "..", "imagens-produtos")
-)
 const IMAGEM_PADRAO = path.join(__dirname, "..", "site", "assets", "img", "produto-placeholder.svg")
-const TAMANHO_DRIVE = process.env.GOOGLE_DRIVE_IMAGE_SIZE || "w1200"
+const VERSAO_IMAGEM = String(process.env.IMAGEM_VERSAO || "1")
 const TIMEOUT_DRIVE = Number(process.env.GOOGLE_DRIVE_TIMEOUT_MS || 8000)
+const CACHE_DRIVE_MS = Number(process.env.GOOGLE_DRIVE_CACHE_MS || 60 * 60 * 1000)
 const CACHE_DRIVE = new Map()
-
-const TIPOS_IMAGEM = Object.freeze({
-    ".svg": "image/svg+xml",
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".webp": "image/webp",
-    ".gif": "image/gif"
-})
 
 function adicionarUrlImagem(produto) {
     return {
         ...produto,
-        imagem_url: "/produtos/" + produto.id + "/imagem"
+        // A versão muda a URL e força o navegador a buscar a imagem atualizada.
+        imagem_url: "/produtos/" + produto.id + "/imagem?v=" + encodeURIComponent(VERSAO_IMAGEM)
     }
 }
 
@@ -46,50 +36,14 @@ function idDriveValido(valor) {
     return /^[A-Za-z0-9_-]{10,}$/.test(String(valor || ""))
 }
 
-function tipoDaImagem(arquivo) {
-    return TIPOS_IMAGEM[path.extname(String(arquivo || "")).toLowerCase()] || null
-}
-
-async function lerImagemLocal(produto) {
-    const arquivo = path.basename(String(produto.caminho_img || ""))
-    const base = arquivo.replace(/\.[^.]+$/, "")
-
-    if (!base) return null
-
-    // O catálogo guarda o nome .svg, mas a pasta pode ter o mesmo arquivo
-    // em PNG/WebP (as imagens do Drive são rasterizadas).
-    const candidatos = [
-        arquivo,
-        base + ".png",
-        base + ".webp",
-        base + ".jpg",
-        base + ".jpeg"
-    ]
-
-    for (const nome of [...new Set(candidatos)]) {
-        const tipo = tipoDaImagem(nome)
-        if (!tipo) continue
-
-        try {
-            return {
-                buffer: await fs.readFile(path.join(DIR_IMAGENS, nome)),
-                tipo
-            }
-        } catch {
-            // Tenta o próximo formato.
-        }
-    }
-
-    return null
-}
-
 async function buscarImagemDrive(id) {
     const emCache = CACHE_DRIVE.get(id)
     if (emCache && emCache.expira > Date.now()) return emCache
 
     try {
-        const url = "https://drive.google.com/thumbnail?id=" +
-            encodeURIComponent(id) + "&sz=" + encodeURIComponent(TAMANHO_DRIVE)
+        // Download direto evita a miniatura cached do Google quando o arquivo
+        // é substituído dentro da mesma pasta do Drive.
+        const url = "https://drive.google.com/uc?export=download&id=" + encodeURIComponent(id)
         const resposta = await fetch(url, {
             redirect: "follow",
             signal: AbortSignal.timeout(TIMEOUT_DRIVE)
@@ -107,7 +61,7 @@ async function buscarImagemDrive(id) {
         const imagem = {
             buffer,
             tipo,
-            expira: Date.now() + 24 * 60 * 60 * 1000
+            expira: Date.now() + CACHE_DRIVE_MS
         }
 
         if (CACHE_DRIVE.size > 100) CACHE_DRIVE.clear()
@@ -259,8 +213,8 @@ router.get("/todos", async (req, res, next) => {
 })
 
 // GET /produtos/:id/imagem -> imagem servida pelo próprio servidor.
-// A origem pode ser o Google Drive (imagem_drive_id), uma pasta externa
-// configurada em IMAGENS_DIR ou o SVG genérico de fallback.
+// A origem é o Google Drive (imagem_drive_id), com o SVG genérico como
+// fallback caso o Drive falhe.
 router.get("/:id/imagem", async (req, res, next) => {
     try {
         const id = Number(req.params.id)
@@ -269,7 +223,7 @@ router.get("/:id/imagem", async (req, res, next) => {
         }
 
         const [linhas] = await db.pool.query(
-            `SELECT id, nome, caminho_img, imagem_drive_id
+            `SELECT id, nome, imagem_drive_id
              FROM produto WHERE id = ? LIMIT 1`,
             [id]
         )
@@ -285,7 +239,6 @@ router.get("/:id/imagem", async (req, res, next) => {
             imagem = await buscarImagemDrive(produto.imagem_drive_id)
         }
 
-        if (!imagem) imagem = await lerImagemLocal(produto)
         if (!imagem) imagem = await lerImagemPadrao()
 
         res.set("Cache-Control", "public, max-age=86400")

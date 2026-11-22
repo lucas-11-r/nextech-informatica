@@ -35,8 +35,8 @@ front-end responsivo com carrinho, montador de PC e área do cliente.
   e assim por diante (5 páginas com 50 produtos).
 - Ordenação por menor preço, maior preço, nome A–Z/Z–A, melhor avaliados, destaques e novidades.
 - Página de detalhe com descrição, especificações, estoque, parcelamento e produtos relacionados.
-- Imagens dos produtos entregues pelo servidor em `GET /produtos/:id/imagem`, com suporte a
-  arquivos no Google Drive e fallback local fora do repositório.
+- Imagens dos produtos entregues pelo servidor em `GET /produtos/:id/imagem`, vindas do
+  Google Drive, com imagem genérica como fallback.
 
 ### Conta e compra
 - Cadastro com validação de nome, CPF, celular, email e senha.
@@ -80,7 +80,6 @@ projeto_final/
 ├── migration.js            # cria tabelas e carrega o catálogo
 ├── data/produtos.js        # fonte única dos 50 produtos
 ├── data/imagens-drive.js   # mapa arquivo -> ID no Google Drive
-├── imagens-produtos/       # imagens dos produtos (SVGs + PNGs p/ Drive)
 ├── src/
 │   ├── produtos.js         # catálogo + rota de imagens
 │   ├── clientes.js         # cadastro, login e perfil
@@ -89,9 +88,10 @@ projeto_final/
 │   ├── validacao-compras.js# validação dos itens e totais
 │   └── auth.js             # middleware do JWT
 ├── scripts/
+│   ├── setup.js            # cria o .env (qualquer sistema operacional)
 │   ├── criar-banco.js      # cria o banco se não existir
 │   ├── testar-banco.js     # diagnóstico do banco (npm run db:test)
-│   ├── gerar-imagens.js    # gera os SVGs na pasta externa
+│   ├── sincronizar-drive.js# lê a pasta do Drive e gera o mapa de IDs
 │   └── gerar-sql.js        # gera o produto.sql
 ├── tests/
 │   ├── validacao.test.js   # testes unitários dos filtros
@@ -116,6 +116,7 @@ projeto_final/
 ├── modelo_cliente.json     # exemplo de corpo para POST /cliente
 ├── modelo_compra.json      # exemplo de corpo para POST /compras
 ├── dotenv-example.txt      # modelo do arquivo .env
+├── docker-compose.yml      # MySQL 8.4 para qualquer sistema operacional
 └── package.json
 ```
 
@@ -124,8 +125,19 @@ projeto_final/
 ## Como rodar
 
 ### Pré-requisitos
-- Node.js 20 ou superior
-- MySQL 8.x em execução
+- Node.js 18 ou superior
+- MySQL 8.x (local) **ou** Docker com Docker Compose
+
+### Compatibilidade
+
+| Item | Suporte |
+|---|---|
+| Sistemas operacionais | Windows, macOS e Linux — sem comandos de shell específicos |
+| Navegadores | Chrome, Edge, Firefox e Safari (desktop e mobile), versões atuais |
+| Node.js | 18 ou superior (Express 5 e `fetch` global) |
+
+Não há suporte a Internet Explorer. O front-end usa Bootstrap 5.3, servido localmente
+juntamente com os ícones; a fonte Manrope tem fallback para fontes do sistema.
 
 ### Passo a passo
 
@@ -133,13 +145,13 @@ projeto_final/
 # 1. Instalar as dependências
 npm install
 
-# 2. Criar o arquivo de configuração
-#    Copie dotenv-example.txt para .env e ajuste usuário/senha do MySQL
-copy dotenv-example.txt .env      # Windows
-# cp dotenv-example.txt .env      # Linux/macOS
+# 2. Criar o .env (funciona em Windows, macOS e Linux)
+npm run setup
 
-# 3. Criar o banco (opcional: a migration também cria)
-npm run db:create
+# 3. Subir o MySQL — escolha UMA opção:
+#    a) Docker (recomendado):
+docker compose up -d
+#    b) MySQL instalado no sistema: inicie o serviço e ajuste DB_* no .env
 
 # 4. Criar as tabelas e carregar os 50 produtos + cliente demo
 npm run migrate
@@ -149,6 +161,10 @@ npm start
 ```
 
 Acesse **http://localhost:3000**.
+
+> Para parar o MySQL do Docker use `docker compose down`; os dados ficam no volume
+> `mysql-data`. Se a porta 3306 já estiver ocupada por um MySQL local, pare-o ou altere
+> `DB_PORT` no `.env` (o Compose e a API passam a usar a nova porta).
 
 > **Importante:** abra sempre por `http://localhost:3000`, e não dando dois cliques no
 > arquivo HTML nem por um servidor de prévia (Live Server, porta 5500, etc.). O login e o
@@ -179,6 +195,7 @@ Os scripts mostram a dica do erro. Os casos mais comuns:
 | `ECONNREFUSED` | MySQL parado ou em outra porta | inicie o serviço e confira `DB_HOST`/`DB_PORT` |
 | `Table 'produto' doesn't exist` | banco existe, mas sem tabelas | `npm run migrate` |
 | `Unknown database` | banco ainda não criado | `npm run db:create` |
+| erro ao instalar/carregar `bcrypt` | binário nativo sem build para a plataforma | `npm rebuild bcrypt` e reinstale as dependências |
 
 Criando um usuário do projeto no MySQL (rode como root do MySQL):
 
@@ -213,16 +230,26 @@ DB_DATABASE=nextech
 JWT_SECRET=uma_chave_longa_e_aleatoria
 JWT_EXPIRES_IN=7d
 
-# Imagens: pasta externa e Google Drive
-IMAGENS_DIR=imagens-produtos
+# Imagens no Google Drive
 GOOGLE_DRIVE_FOLDER_ID=ID_DA_PASTA_NO_DRIVE
 GOOGLE_DRIVE_API_KEY=chave_de_api_do_google_drive
-GOOGLE_DRIVE_IMAGE_SIZE=w1200
 GOOGLE_DRIVE_TIMEOUT_MS=8000
+GOOGLE_DRIVE_CACHE_MS=3600000
+
+# Aumente ao trocar fotos no Drive (renova o cache do navegador)
+IMAGEM_VERSAO=2
 ```
+
+> Com Docker Compose, `DB_PASSWORD` pode ficar vazia (o container aceita `root` sem senha).
+> Com MySQL local, informe a senha da sua instalação.
 
 > A `GOOGLE_DRIVE_API_KEY` é opcional, porém recomendada: o Google descontinuou o
 > `embeddedfolderview` usado como alternativa, e ele pode devolver a pasta vazia.
+
+> As fotos vêm do download direto do Drive (sem cache de miniatura do Google). Ao trocar
+> arquivos na pasta, incremente `IMAGEM_VERSAO` e reinicie o servidor: a URL muda
+> (`/produtos/:id/imagem?v=...`), o navegador busca a imagem nova e o cache em memória
+> (`GOOGLE_DRIVE_CACHE_MS`, padrão 1 hora) é limpo no restart.
 
 Gere uma chave segura com:
 
@@ -302,30 +329,40 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 Ambos podem ser executados no MySQL Workbench. O `migration.js` faz o mesmo de forma
 automática e idempotente.
 
-### MySQL portátil (usado neste ambiente)
+### Preços e estoques do catálogo
 
-Neste computador o MySQL 8.4.9 foi instalado em modo portátil, sem serviço do Windows:
+Os preços são referências de mercado pesquisadas em 22/11/2026 (menor preço à vista/PIX de
+produto novo em lojas brasileiras), registradas em `data/precos-pesquisados.js` com fonte e
+status (`encontrado` ou `estimado`). Produtos sem fonte confiável foram estimados pelo similar
+da mesma categoria; os PCs da marca NexTech e os serviços também são estimados.
 
-```powershell
-$base = "C:\Users\Public\mysql-nextech\mysql-8.4.9-winx64"
+Ao alterar `data/produtos.js`, rode `npm run catalogo:atualizar` para replicar no MySQL e
+`npm run sql` para regenerar o script SQL. Não use `migrate:reset` para isso: ele apagaria
+clientes e pedidos.
 
-# iniciar o servidor
-& "$base\bin\mysqld.exe" `
-  --basedir="$base" `
-  --datadir="C:\Users\Public\mysql-nextech\data" `
-  --port=3306 `
-  --bind-address=127.0.0.1 `
-  --log-error="C:\Users\Public\mysql-nextech\mysql-error.log"
+### Banco de dados em qualquer sistema operacional
 
-# conferir se está no ar
-Test-NetConnection 127.0.0.1 -Port 3306
+**Opção A — Docker Compose (recomendada):**
+
+```bash
+docker compose up -d      # sobe o MySQL 8.4 na porta definida em DB_PORT
+docker compose ps         # confere o healthcheck
+docker compose down       # para o container (os dados permanecem no volume mysql-data)
 ```
 
-Credenciais locais usadas no `.env`: usuário `root`, banco `nextech`.
-A senha do root está definida no arquivo `.env` (não versionado).
+O `docker-compose.yml` lê `DB_DATABASE`, `DB_PORT` e `DB_PASSWORD` do `.env`. Com a senha em
+branco, o container aceita `root` sem senha — adequado para desenvolvimento local; em outro
+contexto, defina uma senha no `.env`.
 
-Se você usa o MySQL instalado como serviço, basta iniciá-lo pelo serviço do Windows e
-apontar `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` e `DB_DATABASE` no `.env`.
+**Opção B — MySQL instalado no sistema:**
+
+- Windows: MySQL Installer (mysql.com) ou uma distribuição portátil do MySQL.
+- macOS: `brew install mysql` e `brew services start mysql`.
+- Ubuntu/Debian: `sudo apt install mysql-server` e `sudo systemctl start mysql`.
+
+Depois ajuste `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` e `DB_DATABASE` no `.env` e
+confira com `npm run db:test`. Em distribuições que usam `auth_socket` para o root, crie um
+usuário próprio, conforme mostrado em "Se algum comando falhar".
 
 ---
 
@@ -415,12 +452,12 @@ acima de R$ 299. O estoque é baixado dentro da mesma transação.
       "id": 1,
       "codigo": "NX...",
       "data_compra": "...",
-      "subtotal": 1899.80,
-      "desconto": 189.98,
+      "subtotal": 1539.80,
+      "desconto": 153.98,
       "frete": 0,
-      "total": 1709.82,
+      "total": 1385.82,
       "itens": [
-        { "produto_id": 1, "nome": "...", "quantidade": 2, "preco_unitario": 899.90, "subtotal": 1799.80 }
+        { "produto_id": 1, "nome": "...", "quantidade": 2, "preco_unitario": 769.90, "subtotal": 1539.80 }
       ]
     }
   ]
@@ -430,11 +467,11 @@ acima de R$ 299. O estoque é baixado dentro da mesma transação.
 ### Imagens
 
 `GET /produtos/:id/imagem` entrega a imagem pelo servidor, com `Cache-Control` de 24 horas.
-A origem é escolhida nesta ordem:
+A API devolve a URL já com `?v=<IMAGEM_VERSAO>` para renovar o cache do navegador quando
+as fotos são trocadas. A origem é escolhida nesta ordem:
 
-1. ID do arquivo no Google Drive (`produto.imagem_drive_id`);
-2. arquivo local em `IMAGENS_DIR` (fora do repositório);
-3. placeholder `site/assets/img/produto-placeholder.svg`.
+1. download direto do arquivo no Google Drive (`produto.imagem_drive_id`);
+2. placeholder `site/assets/img/produto-placeholder.svg` se o Drive falhar.
 
 ### Produtos
 
@@ -483,9 +520,9 @@ GET /produtos?categoria=processador&preco_min=200&preco_max=700&ordem=menor_prec
       "nome": "Processador AMD Athlon 3000G 3.5GHz",
       "categoria": "Processadores",
       "marca": "AMD",
-      "preco": 329.9,
-      "estoque": 18,
-      "imagem_url": "/produtos/2/imagem",
+      "preco": 299.9,
+      "estoque": 8,
+      "imagem_url": "/produtos/2/imagem?v=2",
       "avaliacao": 4.4,
       "avaliacoes": 160
     }
@@ -535,25 +572,22 @@ Detalhes de implementação:
 
 ### Imagens no Google Drive
 
-As imagens prontas para upload estão em `imagens-produtos/nextech-imagens-drive.zip`
-(50 PNGs de 1600×1200). O Google Drive não gera miniatura de SVG, por isso o envio é
-feito em PNG.
+As 50 imagens do catálogo estão hospedadas em uma pasta pública do Google Drive, em JPG.
+O Google Drive não gera miniatura de SVG, por isso o envio foi feito em arquivos raster.
 
-1. Abra a pasta no Drive e arraste o conteúdo do ZIP (ou descompacte antes).
-   Mantenha os nomes dos arquivos (`01-ryzen-5-5600.png`, `02-athlon-3000g.png`, ...).
-2. Compartilhe a pasta como **qualquer pessoa com o link** (leitor). O servidor baixa
+1. Compartilhe a pasta como **qualquer pessoa com o link** (leitor). O servidor baixa
    as miniaturas sem autenticação.
-3. Crie uma **chave de API** no Google Cloud (APIs & Services → Credentials), ative a
+2. Crie uma **chave de API** no Google Cloud (APIs & Services → Credentials), ative a
    Google Drive API e defina `GOOGLE_DRIVE_API_KEY` no `.env`. Sem a chave, o script
    tenta o `embeddedfolderview`, que o Google pode devolver vazio.
-4. Informe a pasta e sincronize os IDs:
+3. Informe a pasta e sincronize os IDs:
 
 ```bash
 npm run drive:sync -- https://drive.google.com/drive/folders/SEU_ID
 # ou defina GOOGLE_DRIVE_FOLDER_ID no .env e rode apenas: npm run drive:sync
 ```
 
-5. Rode `npm run migrate` para gravar os IDs na coluna `produto.imagem_drive_id`.
+4. Rode `npm run migrate` para gravar os IDs na coluna `produto.imagem_drive_id`.
 
 O `drive:sync` lê a listagem pública da pasta (via Drive API v3 quando há chave),
 casa cada arquivo com o produto pelo nome e reescreve `data/imagens-drive.js`:
@@ -567,8 +601,8 @@ module.exports = {
 A chave pode ser o nome com ou sem extensão. Se preferir, preencha o arquivo à mão
 com o ID de cada arquivo (trecho entre `/d/` e `/view` na URL).
 
-As imagens locais ficam em `imagens-produtos` (ou no caminho definido em
-`IMAGENS_DIR`). Essa pasta é versionada no repositório.
+O projeto não mantém cópias locais das fotos: a única origem é o Google Drive. Se ele
+estiver indisponível, a rota entrega `site/assets/img/produto-placeholder.svg`.
 
 ---
 
@@ -596,14 +630,15 @@ O `npm run db:test` valida conexão, contagens, categorias, faixa de preço, pag
 
 | Comando | O que faz |
 |---|---|
+| `npm run setup` | Cria o `.env` a partir do modelo (qualquer sistema operacional) |
 | `npm start` | Sobe a API + site em `http://localhost:3000` |
 | `npm run dev` | Igual ao start, com recarga automática |
 | `npm run migrate` | Cria tabelas e carrega os dados (idempotente) |
 | `npm run migrate:reset` | Apaga as tabelas e recarrega tudo |
+| `npm run catalogo:atualizar` | Atualiza preços/estoques no banco sem apagar clientes nem pedidos |
 | `npm run db:create` | Cria o banco, se necessário |
 | `npm run db:test` | Diagnóstico do banco |
 | `npm test` | Executa a suíte de testes |
-| `npm run imagens` | Regenera as imagens SVG na pasta externa `imagens-produtos` |
 | `npm run drive:sync` | Lê a pasta pública do Drive e gera `data/imagens-drive.js` |
 | `npm run sql` | Regenera o `produto.sql` |
 

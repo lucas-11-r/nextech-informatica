@@ -1,12 +1,14 @@
-# Copie este arquivo para ".env" e preencha com os dados do seu MySQL.
-# O arquivo .env não deve ser enviado para o repositório.
+# Rode `npm run setup` para criar o ".env" a partir deste modelo.
+# Funciona em Windows, macOS e Linux. O .env não deve ser versionado.
 
 API_PORT=3000
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=sua_senha_do_mysql
+# Com Docker Compose, deixe em branco (o container aceita root sem senha).
+# Com MySQL local, informe a senha definida na instalação.
+DB_PASSWORD=
 DB_DATABASE=nextech
 
 # Use uma chave longa e aleatória. Exemplo de geração:
@@ -14,16 +16,15 @@ DB_DATABASE=nextech
 JWT_SECRET=coloque_uma_chave_longa_e_aleatoria
 JWT_EXPIRES_IN=7d
 
-# Pasta externa com as imagens dos produtos (fora do GitHub).
-# Se não existir, o servidor usa o placeholder.
-IMAGENS_DIR=imagens-produtos
-
-# Google Drive: tamanho da miniatura e tempo máximo de espera
-GOOGLE_DRIVE_IMAGE_SIZE=w1200
+# Google Drive: tempo máximo de espera e cache em memória das imagens (ms)
 GOOGLE_DRIVE_TIMEOUT_MS=8000
+GOOGLE_DRIVE_CACHE_MS=3600000
+
+# Suba este número ao trocar fotos no Drive: muda a URL e renova o cache do navegador
+IMAGEM_VERSAO=2
 
 # Pasta do Google Drive que guarda as imagens (usada por npm run drive:sync)
-GOOGLE_DRIVE_FOLDER_ID=
+GOOGLE_DRIVE_FOLDER_ID=1WAi0RQksFuX5wg-sow7wBc2UgqgCZMBh
 
 # Opcional e recomendado: chave de API do Google Drive para listar a pasta.
 # Sem ela o script tenta o embeddedfolderview, que o Google pode devolver vazio.

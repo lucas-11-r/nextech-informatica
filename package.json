@@ -6,15 +6,19 @@
   "author": "NexTech Informática",
   "type": "commonjs",
   "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
+    "setup": "node scripts/setup.js",
     "start": "node index.js",
     "dev": "node --watch index.js",
     "migrate": "node migration.js",
     "migrate:reset": "node migration.js --reset",
+    "catalogo:atualizar": "node scripts/atualizar-catalogo.js",
     "db:create": "node scripts/criar-banco.js",
     "db:test": "node scripts/testar-banco.js",
     "test": "node --test tests/validacao.test.js tests/compras.test.js tests/site.test.js tests/api.test.js",
-    "imagens": "node scripts/gerar-imagens.js",
     "drive:sync": "node scripts/sincronizar-drive.js",
     "sql": "node scripts/gerar-sql.js"
   },

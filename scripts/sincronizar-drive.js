@@ -6,8 +6,9 @@
 //
 // A pasta precisa estar compartilhada como "qualquer pessoa com o link".
 // O script lê a listagem pública da pasta, casa os nomes dos arquivos com os
-// produtos e reescreve data/imagens-drive.js. Depois rode `npm run migrate`
-// para gravar os IDs no banco.
+// produtos (pelo padrão "NN-slug" ou pelo nome do produto) e reescreve
+// data/imagens-drive.js. Depois rode `npm run migrate` para gravar os IDs
+// no banco.
 
 const fs = require("fs")
 const path = require("path")
@@ -31,13 +32,40 @@ function extrairId(entrada) {
     const texto = String(entrada || "").trim()
     if (!texto) return ""
 
-    const porLink = texto.match(/\/folders\/([A-Za-z0-9_-]+)/)
-    if (porLink) return porLink[1]
+    const porPasta = texto.match(/\/folders\/([A-Za-z0-9_-]+)/)
+    if (porPasta) return porPasta[1]
+
+    const porArquivo = texto.match(/\/file\/d\/([A-Za-z0-9_-]+)/)
+    if (porArquivo) return porArquivo[1]
 
     const porParametro = texto.match(/[?&]id=([A-Za-z0-9_-]+)/)
     if (porParametro) return porParametro[1]
 
     return /^[A-Za-z0-9_-]{10,}$/.test(texto) ? texto : ""
+}
+
+// A listagem HTML do Drive devolve entidades como &quot; no nome do arquivo.
+function decodificarHtml(texto) {
+    return String(texto || "")
+        .replace(/&quot;/gi, '"')
+        .replace(/&apos;|&#0*39;/gi, "'")
+        .replace(/&amp;/gi, "&")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/&nbsp;/gi, " ")
+}
+
+// Compara nomes ignorando acentos, caixa, pontuação e espaços.
+function normalizarNome(texto) {
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "")
+}
+
+function nomeSemExtensao(nome) {
+    return String(nome || "").replace(/\.[^.]+$/, "")
 }
 
 // Lista a pasta pela API oficial do Drive (v3). Exige uma chave de API
@@ -75,7 +103,7 @@ async function listarPastaApi(idPasta) {
         const dados = await resposta.json()
         for (const arquivo of dados.files || []) {
             if (EXTENSOES.test(arquivo.name)) {
-                arquivos.push({ id: arquivo.id, nome: arquivo.name })
+                arquivos.push({ id: arquivo.id, nome: decodificarHtml(arquivo.name) })
             }
         }
         pageToken = dados.nextPageToken || ""
@@ -109,7 +137,7 @@ async function listarPasta(idPasta) {
         const nome = (bloco.match(/flip-entry-title[^>]*>([^<]+)</) || [])[1]
 
         if (id && nome && EXTENSOES.test(nome.trim())) {
-            arquivos.push({ id, nome: nome.trim() })
+            arquivos.push({ id, nome: decodificarHtml(nome.trim()) })
         }
     }
 
@@ -140,8 +168,7 @@ function escreverMapa(mapa) {
         "// Exemplo:",
         '// "01-ryzen-5-5600": "1AbCdEfGhIjKlMnOpQrStUvWxYz"',
         "//",
-        "// Se o mapa estiver vazio, o servidor usa a pasta externa definida em",
-        "// IMAGENS_DIR ou a imagem genérica de fallback.",
+        "// Se o mapa estiver vazio, o servidor usa a imagem genérica de fallback.",
         "",
         "module.exports = {",
         linhas.length ? linhas.join(",\n") : "",
@@ -153,7 +180,15 @@ function escreverMapa(mapa) {
 }
 
 async function principal() {
-    const idPasta = extrairId(process.argv[2] || process.env.GOOGLE_DRIVE_FOLDER_ID)
+    const entrada = process.argv[2] || process.env.GOOGLE_DRIVE_FOLDER_ID
+
+    if (/\/file\/d\//.test(String(entrada || ""))) {
+        console.error("Esse link aponta para um arquivo, não para uma pasta.")
+        console.error("Para um arquivo isolado, adicione o ID manualmente em data/imagens-drive.js.")
+        process.exit(1)
+    }
+
+    const idPasta = extrairId(entrada)
 
     if (!idPasta) {
         console.error("Informe a pasta do Drive:")
@@ -175,8 +210,12 @@ async function principal() {
     }
 
     const porBase = new Map()
+    const porNome = new Map()
     for (const arquivo of arquivos) {
-        porBase.set(arquivo.nome.replace(/\.[^.]+$/, "").toLowerCase(), arquivo)
+        const semExtensao = nomeSemExtensao(arquivo.nome)
+        porBase.set(semExtensao.toLowerCase(), arquivo)
+        const nomeNormalizado = normalizarNome(semExtensao)
+        if (nomeNormalizado) porNome.set(nomeNormalizado, arquivo)
     }
 
     const mapa = {}
@@ -185,7 +224,19 @@ async function principal() {
 
     for (const produto of PRODUTOS) {
         const base = String(produto.id).padStart(2, "0") + "-" + produto.slug
-        const achado = porBase.get(base.toLowerCase())
+        const nomeProduto = normalizarNome(produto.nome)
+        let achado = porBase.get(base.toLowerCase()) || porNome.get(nomeProduto)
+
+        // A pasta pode usar o nome completo do produto (ex.: "Monitor LG 21.5"
+        // 75Hz Full HD.jpg"). Aceita a correspondência só quando é única,
+        // para não atribuir a imagem errada a outro produto.
+        if (!achado && nomeProduto) {
+            const candidatos = arquivos.filter(arquivo => {
+                const nome = normalizarNome(nomeSemExtensao(arquivo.nome))
+                return nome.includes(nomeProduto) || nomeProduto.includes(nome)
+            })
+            if (candidatos.length === 1) achado = candidatos[0]
+        }
 
         if (achado) {
             mapa[base] = achado.id

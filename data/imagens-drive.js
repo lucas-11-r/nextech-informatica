@@ -1,15 +1,61 @@
 // Mapa entre o arquivo da imagem do produto e o ID do arquivo no Google Drive.
 //
-// Como preencher:
-// 1. Envie as imagens para uma pasta do Google Drive.
-// 2. Compartilhe cada arquivo como "qualquer pessoa com o link".
-// 3. Copie o ID que aparece na URL (o trecho entre /d/ e /view).
-// 4. Informe o ID abaixo, usando o nome do arquivo como chave.
+// Gerado por `npm run drive:sync`. Pode ser editado à mão:
+// a chave aceita o nome do arquivo com ou sem extensão.
 //
 // Exemplo:
-// "01-ryzen-5-5600.svg": "1AbCdEfGhIjKlMnOpQrStUvWxYz"
+// "01-ryzen-5-5600": "1AbCdEfGhIjKlMnOpQrStUvWxYz"
 //
-// Se o mapa estiver vazio, o servidor usa a pasta externa definida em
-// IMAGENS_DIR ou a imagem genérica de fallback.
-
-module.exports = {}
+// Se o mapa estiver vazio, o servidor usa a imagem genérica de fallback.
+module.exports = {
+    "01-ryzen-5-5600": "1tQhGXVAc6zni0oi9rSNSxMwAmJWhzO3U",
+    "02-athlon-3000g": "1ljLh1k21biSpcfQeA5zZsZXM0SzvYiws",
+    "03-i5-12400f": "116jNE0hSBAZOQ62dAzLQ5Q9b0xBKkDJM",
+    "04-i7-12700f": "1XwfXIpeqPU31bCQGG0QHKYEYidfg9zyo",
+    "05-ryzen-5-7600": "1tzdiP1JEa49yh4_Nb_o-hkeci2FOnYlF",
+    "06-rtx-3050": "1vHt3sKMg0LaUwSmg1oU0O40tVzV25skO",
+    "07-rtx-4060": "1xMPu-YZeN1jDgUL6-4868Ui5O9kMc2AY",
+    "08-rx-6600": "1WRc44qbrdaE8erfYK2fFNntVnD1rBuNA",
+    "09-rtx-4070": "1BycVXsuHM8vxp-sfW3PlE3WGgGo98n1d",
+    "10-rx-7800-xt": "1zNB9dReSDkgQzEvTuJPaeoqHZOS7_0Ar",
+    "11-asus-b550m-a": "1UdcdiXwBpUTDUWDQWG3nqkJLOpZRaGY9",
+    "12-gigabyte-b760m": "1lxUlJTOs45aXd-hCa0NqZXx4M6r3xUQB",
+    "13-asrock-a620m": "1H_zo0x37CpPvgDb3M9vc1KsvjbAFTTB7",
+    "14-asus-x670e": "1aFCArSCWkKV3s3ecRCxmTSuLCbPieYXL",
+    "15-fury-8gb-ddr4": "1nrYcitvsGrJIJQW0Smpae8xTlYylG49Z",
+    "16-fury-16gb-ddr4": "1MfO52BL0febtwv1lFhyCiWAAXr97ehTg",
+    "17-vengeance-32gb": "13_D-0uZLgHmbZTfqDJQFrQgIb6v6vLrV",
+    "18-fury-16gb-ddr5": "1x18Jud_7gwKdugM_P4zLNLFHi53EXRYU",
+    "19-a400-240gb": "1HXD7tVXV-UmXdnh2d0zgY7FHJ5UqtkFf",
+    "20-nv2-500gb": "1xLi0k0cYSpCyATBkyPbmP95qeYRMCamv",
+    "21-samsung-980-1tb": "153J2pGWNwfxaMjcAHQ6mfDcm8L-h7q0W",
+    "22-barracuda-2tb": "1SdgBUQymjosFd3HcBen21AWC6Oe4Ee4Y",
+    "23-corsair-cv550": "1hmOLZY0QZpAwfBpggmNGfxrgLw7bACHj",
+    "24-mwe-650w": "1EtrbHeLUXME2Lb2ufcWqAQHfwOArxSGY",
+    "25-xpg-750w": "1943N0ySkDGWLTlbskMuU4UrgX090dyND",
+    "26-wideload-lite": "11IrEJHybAUDRxmXuciXDVArgQuP1y6sn",
+    "27-lancool-216": "1UJoWAXxI_hv3abEcFpuWrHtBZMxDxbga",
+    "28-nr200p": "1RKpRJQisP6r6H8K4egCqHDEaKMd2BE7L",
+    "29-ak400": "1xkXpp91aTgFiqw4H2d4H02exteIECric",
+    "30-lt520": "1lxOzBJ82SY8cy-gb5Z-hc2XSbokl7uBj",
+    "31-lg-215": "1ujh7ezgW7H3u2xoZ1g7bshdA7VvDFl6A",
+    "32-aoc-24-144hz": "1EjIs9dceNRW1jDegH2PbmhmWDVPgaUNq",
+    "33-odyssey-g4": "1pIjbDi9mMjTEBhp1rLO4X2CoB0XP1UQx",
+    "34-kumara-rgb": "1shbZHqSxPetnhNRsan0GKWMoGiS6Spum",
+    "35-g203": "1pvhnVmvVPq3i0jqShThYLb1tu3dIkJWI",
+    "36-cloud-stinger-2": "1GEJUNdne8UafvHlrZn5-o0Yf_tj0sphK",
+    "37-piscis-gg": "1P9XPwJQWc640tcm_npUdYQA5wrFQrGoS",
+    "38-c920s": "1sYQoiEa02yOimUHJzJZvTXDHlGWD9Ims",
+    "39-ideapad-1": "1UT_htmgmWf6hK5qpuFGaocmz4Z2o0hxb",
+    "40-nitro-v15": "194y_ZiX2ezBw2jQyNqtVoL6TSrdibAzo",
+    "41-galaxy-a15": "102fGSujHrb5-CJy-1nA3wPWIfPhfcRSJ",
+    "42-edge-50": "1eCTvHCL9pioLVzktxOpCnFycc6BDSngi",
+    "43-galaxy-s24": "10FNx3hw93pXmGIrw5VDDUQqzsLnSCa39",
+    "44-pc-office": "1_-f29k8wU88AM3By9Id6Qk5kSUybPzzE",
+    "45-pc-home": "1AwdVGzPPCLxItT0c3rd1DuwiAJuJ9wfX",
+    "46-pc-storm": "1r7WZpE9D7m82j7L50P_wIWc6XI-K0y8i",
+    "47-pc-play": "1L30OP6JtGCipsW9vStU6tWl-JX7eb8SG",
+    "48-instalacao-windows": "1SI60QzmPLrrAuggOiO5HNJWFafoOTBeT",
+    "49-formatacao": "1fxnDBTWY7_zqOL0J1ouvGvDWIAZjHuPl",
+    "50-montagem": "1w9I338_kqc7awTU7Ezq8ADkz5vJtqvSQ"
+}

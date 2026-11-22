@@ -70,6 +70,17 @@ test("o catálogo tem 50 produtos e usa imagens servidas pela API", () => {
     assert.match(api, /function apiPostAuth\(/)
 })
 
+test("fallback da home reflete o menor preço e a quantidade do catálogo", () => {
+    const produtos = require("../data/produtos")
+    const html = ler("index.html")
+
+    const menor = Math.min(...produtos.map(produto => produto.preco))
+    const esperado = "R$ " + menor.toFixed(2).replace(".", ",")
+
+    assert.ok(html.includes('id="stat-menor">' + esperado), "fallback de preço desatualizado: " + esperado)
+    assert.ok(html.includes('id="stat-produtos">' + produtos.length + "<"), "fallback de quantidade desatualizado")
+})
+
 test("catálogo tem busca, categoria, preço, ordenação e paginação", () => {
     const html = ler("produtos.html")
 
