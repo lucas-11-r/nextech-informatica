@@ -51,6 +51,10 @@ front-end responsivo com carrinho, montador de PC e área do cliente.
 - Na página do carrinho, os itens são sincronizados com o catálogo (nome, preço, imagem e estoque).
 - Checkout exige login: sem sessão, o site abre um aviso para entrar ou criar conta.
 - Checkout em etapas: dados de entrega, forma de pagamento (PIX, cartão ou boleto) e resumo do pedido.
+- O CEP é consultado no ViaCEP e preenche rua, bairro, cidade e UF automaticamente.
+- Endereço validado no navegador **e** na API: `POST /compras` recusa pedidos sem CEP válido,
+  número, bairro, cidade e UF válida. O CEP também é conferido no ViaCEP pelo servidor; se o
+  serviço externo falhar, a compra segue com a validação local. Endereço não é armazenado no banco.
 - Compra registrada no MySQL por `POST /compras`, com vários produtos e baixa de estoque.
 - Página "Minha conta" com dados do cliente (via `GET /cliente/perfil`) e histórico de compras
   (via `GET /compras`).

@@ -5,6 +5,8 @@ const { autenticar } = require("./auth")
 const {
     validarItens,
     validarCupom,
+    validarEntrega,
+    verificarCep,
     calcularTotais
 } = require("./validacao-compras")
 
@@ -76,6 +78,16 @@ router.post("/", autenticar, async (req, res, next) => {
         const cupomValidado = validarCupom(body.cupom)
         if (cupomValidado.erro) {
             return res.status(400).json({ erro: cupomValidado.erro })
+        }
+
+        const entregaValidada = validarEntrega(body.entrega)
+        if (entregaValidada.erro) {
+            return res.status(400).json({ erro: entregaValidada.erro })
+        }
+
+        const cepVerificado = await verificarCep(entregaValidada.entrega.cep)
+        if (cepVerificado.erro) {
+            return res.status(400).json({ erro: cepVerificado.erro })
         }
 
         const solicitados = itensValidados.itens

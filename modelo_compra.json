@@ -3,5 +3,15 @@
     { "produto_id": 1, "quantidade": 2 },
     { "produto_id": 12, "quantidade": 1 }
   ],
-  "cupom": "NEXTECH10"
+  "cupom": "NEXTECH10",
+  "entrega": {
+    "cep": "84010-010",
+    "endereco": "Rua Dr. Augusto Viana da Silveira",
+    "numero": "1200",
+    "complemento": "Apto 1",
+    "bairro": "Centro",
+    "cidade": "Ponta Grossa",
+    "uf": "PR"
+  },
+  "pagamento": "pix"
 }

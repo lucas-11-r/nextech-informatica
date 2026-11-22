@@ -109,6 +109,19 @@ test("carrinho exige login e registra a compra na API", () => {
     assert.match(perfil, /apiGetAuth\("\/compras"\)/)
 })
 
+test("checkout valida endereço e consulta CEP via ViaCEP", () => {
+    const html = ler("carrinho.html")
+    const js = ler("js/carrinho.js")
+
+    ;["checkout-cep", "checkout-endereco", "checkout-numero", "checkout-bairro", "checkout-cidade", "checkout-uf"]
+        .forEach(id => assert.match(html, new RegExp('id="' + id + '"'), "faltando #" + id))
+
+    assert.match(js, /viacep\.com\.br/)
+    assert.match(js, /function validarCheckout\(/)
+    assert.match(js, /UFS_VALIDAS/)
+    assert.match(js, /entrega: \{/)
+})
+
 test("login guarda nome_cliente e token no localStorage", () => {
     const api = ler("js/api.js")
     const login = ler("js/login.js")

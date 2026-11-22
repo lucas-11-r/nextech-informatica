@@ -6,6 +6,13 @@ const FRETE_GRATIS_A_PARTIR = 299
 const VALOR_FRETE = 29.90
 
 const CHAVE_CHECKOUT = "nextech_checkout"
+const VIACEP_URL = "https://viacep.com.br/ws/"
+const UFS_VALIDAS = [
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+]
+
 const ROTULOS_PAGAMENTO = {
     pix: "PIX",
     cartao: "Cartão de crédito",
@@ -16,6 +23,12 @@ const estadoCarrinho = {
     cupom: "",
     desconto: 0
 }
+
+// Estado da consulta de CEP: o endereço preenchido automaticamente é uma
+// comodidade; a validação que bloqueia a compra continua sendo feita na API.
+const estadoCep = { digitos: "", encontrado: null, consultando: false, falhaRede: false }
+const cacheCep = new Map()
+let consultaCepAtual = 0
 
 function getDadosEntrega() {
     try {
@@ -43,6 +56,128 @@ function salvarDadosEntrega(dados) {
         // Sem armazenamento: os dados valem só para este checkout.
     }
 }
+
+/* --------------------------- CEP / ViaCEP --------------------------- */
+
+function digitosCep(valor) {
+    return String(valor === undefined || valor === null ? "" : valor).replace(/\D/g, "").slice(0, 8)
+}
+
+function limparEstadoCep() {
+    estadoCep.digitos = ""
+    estadoCep.encontrado = null
+    estadoCep.consultando = false
+    estadoCep.falhaRede = false
+}
+
+function obterStatusCep() {
+    let status = document.getElementById("checkout-cep-status")
+    const campo = document.getElementById("checkout-cep")
+
+    if (!status && campo) {
+        status = document.createElement("div")
+        status.id = "checkout-cep-status"
+        status.className = "texto-muted"
+        status.style.cssText = "font-size:11px;min-height:14px;margin-top:3px"
+        campo.insertAdjacentElement("afterend", status)
+    }
+
+    return status
+}
+
+function mostrarStatusCep(status, mensagem, tipo) {
+    if (!status) return
+    status.textContent = mensagem || ""
+    status.classList.toggle("text-danger", tipo === "erro")
+}
+
+function preencherCamposEndereco(dados) {
+    const valores = {
+        "checkout-endereco": dados.logradouro,
+        "checkout-bairro": dados.bairro,
+        "checkout-cidade": dados.localidade,
+        "checkout-uf": dados.uf
+    }
+
+    Object.entries(valores).forEach(([id, valor]) => {
+        const campo = document.getElementById(id)
+        if (campo && valor) campo.value = valor
+    })
+}
+
+async function buscarEnderecoPorCep(cep) {
+    let controle = null
+    let temporizador = null
+
+    try {
+        if (typeof AbortController === "function") {
+            controle = new AbortController()
+            temporizador = setTimeout(() => controle.abort(), 6000)
+        }
+
+        const opcoes = controle ? { signal: controle.signal } : undefined
+        const resposta = await fetch(VIACEP_URL + cep + "/json/", opcoes)
+        if (!resposta.ok) throw new Error("Falha na consulta do CEP")
+        const dados = await resposta.json()
+        if (dados && dados.erro) return { encontrado: false }
+        return { encontrado: true, dados }
+    } catch {
+        return { falhaRede: true }
+    } finally {
+        if (temporizador) clearTimeout(temporizador)
+    }
+}
+
+async function consultarCep(campo, status) {
+    if (!campo) return
+
+    const digitos = digitosCep(campo.value)
+    if (digitos.length !== 8) {
+        consultaCepAtual++
+        limparEstadoCep()
+        mostrarStatusCep(status, "")
+        return
+    }
+
+    const sequencia = ++consultaCepAtual
+    estadoCep.digitos = digitos
+    estadoCep.encontrado = null
+    estadoCep.consultando = true
+    estadoCep.falhaRede = false
+    mostrarStatusCep(status, "Buscando endereço...")
+
+    let resultado = cacheCep.get(digitos)
+    if (!resultado) {
+        resultado = await buscarEnderecoPorCep(digitos)
+        if (!resultado.falhaRede) cacheCep.set(digitos, resultado)
+    }
+
+    // Descarta respostas de consultas antigas se o CEP mudou enquanto buscava.
+    if (sequencia !== consultaCepAtual || digitosCep(campo.value) !== digitos) return
+
+    estadoCep.consultando = false
+
+    if (resultado.falhaRede) {
+        estadoCep.falhaRede = true
+        mostrarStatusCep(status, "Não foi possível consultar o CEP. Preencha o endereço manualmente.")
+        return
+    }
+
+    if (!resultado.encontrado) {
+        estadoCep.encontrado = false
+        campo.classList.add("is-invalid")
+        mostrarStatusCep(status, "CEP não encontrado. Confira os dígitos informados.", "erro")
+        return
+    }
+
+    estadoCep.encontrado = true
+    preencherCamposEndereco(resultado.dados)
+    mostrarStatusCep(status, "Endereço encontrado.")
+}
+
+const consultarCepDebounce = typeof debounce === "function"
+    ? debounce((campo, status) => consultarCep(campo, status), 350)
+    : null
 
 // Busca os dados atuais do catálogo para o carrinho nunca mostrar produto
 // removido, preço antigo ou estoque desatualizado.
@@ -425,6 +560,10 @@ function preencherCheckout(resumo) {
             <span>Pedido de <strong>${escapeHtml(nome)}</strong>${email ? " • " + escapeHtml(email) : ""}</span>`
     }
 
+    consultaCepAtual++
+    limparEstadoCep()
+    mostrarStatusCep(obterStatusCep(), "")
+
     const salvo = getDadosEntrega()
     const campos = {
         "checkout-cep": salvo.cep,
@@ -438,7 +577,9 @@ function preencherCheckout(resumo) {
 
     Object.entries(campos).forEach(([id, valor]) => {
         const campo = document.getElementById(id)
-        if (campo) campo.value = valor || ""
+        if (!campo) return
+        campo.value = valor || ""
+        campo.classList.remove("is-invalid")
     })
 
     const pagamento = salvo.pagamento || "pix"
@@ -573,7 +714,7 @@ function validarCheckout() {
         ["checkout-numero", dados.numero.length > 0, "Informe o número do endereço."],
         ["checkout-bairro", dados.bairro.length >= 2, "Informe o bairro."],
         ["checkout-cidade", dados.cidade.length >= 2, "Informe a cidade."],
-        ["checkout-uf", /^[A-Z]{2}$/.test(dados.uf), "Informe a UF com 2 letras."]
+        ["checkout-uf", UFS_VALIDAS.includes(dados.uf), "Informe uma UF válida."]
     ]
 
     for (const [id, valido, mensagem] of regras) {
@@ -585,6 +726,22 @@ function validarCheckout() {
         }
         mostrarAlertaCheckout(mensagem)
         return null
+    }
+
+    if (estadoCep.digitos === dados.cep) {
+        if (estadoCep.consultando) {
+            mostrarAlertaCheckout("Aguarde a consulta do CEP.")
+            return null
+        }
+        if (estadoCep.encontrado === false) {
+            const campo = document.getElementById("checkout-cep")
+            if (campo) {
+                campo.classList.add("is-invalid")
+                campo.focus()
+            }
+            mostrarAlertaCheckout("CEP não encontrado. Confira o CEP informado.")
+            return null
+        }
     }
 
     if (!ROTULOS_PAGAMENTO[dados.pagamento]) {
@@ -608,11 +765,25 @@ function validarCheckout() {
 
 function configurarCheckout() {
     const cep = document.getElementById("checkout-cep")
+    const statusCep = obterStatusCep()
+
     if (cep) {
         cep.addEventListener("input", () => {
-            const digitos = cep.value.replace(/\D/g, "").slice(0, 8)
+            const digitos = digitosCep(cep.value)
             cep.value = digitos.replace(/^(\d{5})(\d)/, "$1-$2")
             cep.classList.remove("is-invalid")
+
+            consultaCepAtual++
+            limparEstadoCep()
+            mostrarStatusCep(statusCep, "")
+
+            if (digitos.length === 8 && consultarCepDebounce) {
+                consultarCepDebounce(cep, statusCep)
+            }
+        })
+
+        cep.addEventListener("blur", () => {
+            if (digitosCep(cep.value).length === 8) consultarCep(cep, statusCep)
         })
     }
 

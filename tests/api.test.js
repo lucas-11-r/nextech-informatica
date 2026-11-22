@@ -11,6 +11,15 @@ let servidor
 let base
 let clienteCriado = null
 
+const entregaValida = {
+    cep: "84010-010",
+    endereco: "Rua Dr. Augusto Viana da Silveira",
+    numero: "1200",
+    bairro: "Centro",
+    cidade: "Ponta Grossa",
+    uf: "PR"
+}
+
 function documentoUnico() {
     const digitos = String(Math.floor(Math.random() * 1e11)).padStart(11, "0").slice(-11)
     return digitos.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
@@ -314,6 +323,59 @@ test("POST /compras exige autenticação", async () => {
     assert.equal(semToken.status, 401)
 })
 
+test("POST /compras valida o endereço de entrega", async () => {
+    const login = await postJson("/login", {
+        email: "demo@nextech.com",
+        senha: "demo1234"
+    })
+    assert.equal(login.status, 200)
+
+    const token = login.corpo.token
+    const itens = [{ produto_id: 1, quantidade: 1 }]
+
+    const casos = [
+        [{ itens }, /dados de entrega/],
+        [{ itens, entrega: {} }, /CEP válido/],
+        [{ itens, entrega: { ...entregaValida, cep: "123" } }, /CEP válido/],
+        [{ itens, entrega: { ...entregaValida, uf: "ZZ" } }, /UF válida/],
+        [{ itens, entrega: { ...entregaValida, numero: "" } }, /número do endereço/]
+    ]
+
+    for (const [dados, esperado] of casos) {
+        const { status, corpo } = await postJsonAuth("/compras", dados, token)
+        assert.equal(status, 400)
+        assert.match(corpo.erro, esperado)
+    }
+})
+
+test("POST /compras recusa CEP inexistente no ViaCEP", async () => {
+    const login = await postJson("/login", {
+        email: "demo@nextech.com",
+        senha: "demo1234"
+    })
+    assert.equal(login.status, 200)
+
+    const fetchOriginal = globalThis.fetch
+    globalThis.fetch = (url, opcoes) => {
+        if (String(url).indexOf("viacep.com.br") >= 0) {
+            return Promise.resolve({ ok: true, json: async () => ({ erro: true }) })
+        }
+        return fetchOriginal(url, opcoes)
+    }
+
+    try {
+        const { status, corpo } = await postJsonAuth("/compras", {
+            itens: [{ produto_id: 1, quantidade: 1 }],
+            entrega: { ...entregaValida, cep: "00000000" }
+        }, login.corpo.token)
+
+        assert.equal(status, 400)
+        assert.match(corpo.erro, /CEP não encontrado/)
+    } finally {
+        globalThis.fetch = fetchOriginal
+    }
+})
+
 test("compra vários produtos, baixa estoque e consulta o histórico", async () => {
     const email = "compra_" + Date.now() + "@nextech.com"
     const dados = {
@@ -348,7 +410,8 @@ test("compra vários produtos, baixa estoque e consulta o histórico", async () 
                 { produto_id: 1, quantidade: 2 },
                 { produto_id: 2, quantidade: 1 }
             ],
-            cupom: "NEXTECH10"
+            cupom: "NEXTECH10",
+            entrega: entregaValida
         }, token)
 
         assert.equal(resposta.status, 201)
@@ -389,12 +452,14 @@ test("compra vários produtos, baixa estoque e consulta o histórico", async () 
         assert.equal(Number(estoqueDepois[0][1].estoque), Number(estoqueAntes[0][1].estoque) - 1)
 
         const inexistente = await postJsonAuth("/compras", {
-            itens: [{ produto_id: 99999, quantidade: 1 }]
+            itens: [{ produto_id: 99999, quantidade: 1 }],
+            entrega: entregaValida
         }, token)
         assert.equal(inexistente.status, 404)
 
         const semEstoque = await postJsonAuth("/compras", {
-            itens: [{ produto_id: 1, quantidade: 999 }]
+            itens: [{ produto_id: 1, quantidade: 999 }],
+            entrega: entregaValida
         }, token)
         assert.equal(semEstoque.status, 409)
     } finally {

@@ -7,6 +7,22 @@ const CUPOM_VALIDO = "NEXTECH10"
 const DESCONTO_CUPOM = 0.10
 const FRETE_GRATIS_A_PARTIR = 299
 const VALOR_FRETE = 29.90
+const VIACEP_URL = "https://viacep.com.br/ws/"
+const TIMEOUT_CEP = 5000
+
+const UFS_VALIDAS = Object.freeze([
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+])
+
+const LIMITES_ENTREGA = Object.freeze({
+    endereco: 120,
+    numero: 20,
+    complemento: 80,
+    bairro: 80,
+    cidade: 80
+})
 
 function centavos(valor) {
     return Math.round(Number(valor) * 100)
@@ -75,6 +91,84 @@ function validarCupom(cupom) {
     return { cupom: codigo }
 }
 
+function textoEntrega(valor, limite) {
+    return String(valor === undefined || valor === null ? "" : valor).trim().slice(0, limite)
+}
+
+/**
+ * Valida e normaliza o endereço de entrega enviado no checkout.
+ * Retorna { erro } ou { entrega }.
+ */
+function validarEntrega(entrada) {
+    if (!entrada || typeof entrada !== "object" || Array.isArray(entrada)) {
+        return { erro: "Informe os dados de entrega" }
+    }
+
+    const entrega = {
+        cep: String(entrada.cep === undefined || entrada.cep === null ? "" : entrada.cep).replace(/\D/g, ""),
+        endereco: textoEntrega(entrada.endereco, LIMITES_ENTREGA.endereco),
+        numero: textoEntrega(entrada.numero, LIMITES_ENTREGA.numero),
+        complemento: textoEntrega(entrada.complemento, LIMITES_ENTREGA.complemento),
+        bairro: textoEntrega(entrada.bairro, LIMITES_ENTREGA.bairro),
+        cidade: textoEntrega(entrada.cidade, LIMITES_ENTREGA.cidade),
+        uf: textoEntrega(entrada.uf, 2).toUpperCase()
+    }
+
+    if (!/^\d{8}$/.test(entrega.cep)) {
+        return { erro: "Informe um CEP válido com 8 dígitos" }
+    }
+    if (entrega.endereco.length < 3) {
+        return { erro: "Informe o endereço de entrega" }
+    }
+    if (!entrega.numero) {
+        return { erro: "Informe o número do endereço" }
+    }
+    if (entrega.bairro.length < 2) {
+        return { erro: "Informe o bairro" }
+    }
+    if (entrega.cidade.length < 2) {
+        return { erro: "Informe a cidade" }
+    }
+    if (!UFS_VALIDAS.includes(entrega.uf)) {
+        return { erro: "Informe uma UF válida" }
+    }
+
+    return { entrega }
+}
+
+/**
+ * Confirma no ViaCEP que o CEP existe. Falha do serviço externo não bloqueia
+ * a compra: o formato e os campos obrigatórios já foram validados localmente.
+ * Retorna { erro } ou { ok: true }.
+ */
+async function verificarCep(cep) {
+    let controle = null
+    let temporizador = null
+
+    try {
+        if (typeof AbortController === "function") {
+            controle = new AbortController()
+            temporizador = setTimeout(() => controle.abort(), TIMEOUT_CEP)
+        }
+
+        const opcoes = controle ? { signal: controle.signal } : undefined
+        const resposta = await fetch(VIACEP_URL + cep + "/json/", opcoes)
+
+        if (!resposta.ok) return { ok: true }
+
+        const dados = await resposta.json()
+        if (dados && dados.erro) {
+            return { erro: "CEP não encontrado. Confira o CEP informado." }
+        }
+
+        return { ok: true }
+    } catch {
+        return { ok: true }
+    } finally {
+        if (temporizador) clearTimeout(temporizador)
+    }
+}
+
 /**
  * Calcula subtotal, desconto, frete e total em reais.
  * `itens` deve conter preco_unitario e quantidade.
@@ -109,7 +203,10 @@ module.exports = {
     DESCONTO_CUPOM,
     FRETE_GRATIS_A_PARTIR,
     VALOR_FRETE,
+    UFS_VALIDAS,
     validarItens,
     validarCupom,
+    validarEntrega,
+    verificarCep,
     calcularTotais
 }
