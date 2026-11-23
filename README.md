@@ -120,7 +120,6 @@ projeto_final/
 ├── modelo_cliente.json     # exemplo de corpo para POST /cliente
 ├── modelo_compra.json      # exemplo de corpo para POST /compras
 ├── dotenv-example.txt      # modelo do arquivo .env
-├── docker-compose.yml      # MySQL 8.4 para qualquer sistema operacional
 └── package.json
 ```
 
@@ -130,7 +129,7 @@ projeto_final/
 
 ### Pré-requisitos
 - Node.js 18 ou superior
-- MySQL 8.x (local) **ou** Docker com Docker Compose
+- MySQL 8.x instalado e em execução na máquina
 
 ### Compatibilidade
 
@@ -152,10 +151,7 @@ npm install
 # 2. Criar o .env (funciona em Windows, macOS e Linux)
 npm run setup
 
-# 3. Subir o MySQL — escolha UMA opção:
-#    a) Docker (recomendado):
-docker compose up -d
-#    b) MySQL instalado no sistema: inicie o serviço e ajuste DB_* no .env
+# 3. Instale/inicie o MySQL no sistema e ajuste DB_* no .env
 
 # 4. Criar as tabelas e carregar os 50 produtos + cliente demo
 npm run migrate
@@ -166,9 +162,8 @@ npm start
 
 Acesse **http://localhost:3000**.
 
-> Para parar o MySQL do Docker use `docker compose down`; os dados ficam no volume
-> `mysql-data`. Se a porta 3306 já estiver ocupada por um MySQL local, pare-o ou altere
-> `DB_PORT` no `.env` (o Compose e a API passam a usar a nova porta).
+> Se a porta 3306 já estiver ocupada por outro serviço, pare-o ou altere `DB_PORT` no `.env`
+> (a API passa a usar a nova porta).
 
 > **Importante:** abra sempre por `http://localhost:3000`, e não dando dois cliques no
 > arquivo HTML nem por um servidor de prévia (Live Server, porta 5500, etc.). O login e o
@@ -244,8 +239,7 @@ GOOGLE_DRIVE_CACHE_MS=3600000
 IMAGEM_VERSAO=2
 ```
 
-> Com Docker Compose, `DB_PASSWORD` pode ficar vazia (o container aceita `root` sem senha).
-> Com MySQL local, informe a senha da sua instalação.
+> `DB_PASSWORD` deve corresponder à senha da sua instalação local do MySQL.
 
 > A `GOOGLE_DRIVE_API_KEY` é opcional, porém recomendada: o Google descontinuou o
 > `embeddedfolderview` usado como alternativa, e ele pode devolver a pasta vazia.
@@ -346,19 +340,7 @@ clientes e pedidos.
 
 ### Banco de dados em qualquer sistema operacional
 
-**Opção A — Docker Compose (recomendada):**
-
-```bash
-docker compose up -d      # sobe o MySQL 8.4 na porta definida em DB_PORT
-docker compose ps         # confere o healthcheck
-docker compose down       # para o container (os dados permanecem no volume mysql-data)
-```
-
-O `docker-compose.yml` lê `DB_DATABASE`, `DB_PORT` e `DB_PASSWORD` do `.env`. Com a senha em
-branco, o container aceita `root` sem senha — adequado para desenvolvimento local; em outro
-contexto, defina uma senha no `.env`.
-
-**Opção B — MySQL instalado no sistema:**
+Instale e inicie o MySQL no sistema:
 
 - Windows: MySQL Installer (mysql.com) ou uma distribuição portátil do MySQL.
 - macOS: `brew install mysql` e `brew services start mysql`.

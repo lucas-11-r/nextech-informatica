@@ -6,8 +6,7 @@ API_PORT=3000
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=root
-# Com Docker Compose, deixe em branco (o container aceita root sem senha).
-# Com MySQL local, informe a senha definida na instalação.
+# Informe a senha definida na instalação local do MySQL.
 DB_PASSWORD=
 DB_DATABASE=nextech
 
