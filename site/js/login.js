@@ -1,8 +1,7 @@
-// Login: autentica na API, grava nome_cliente e token no localStorage.
 
 function destinoSeguro(valor) {
     if (!valor) return "index.html"
-    // Aceita somente caminhos relativos do próprio site (evita redirecionamento externo).
+
     if (/^([a-z]+:)?\/\//i.test(valor) || valor.startsWith("\\") || valor.startsWith("javascript:")) {
         return "index.html"
     }

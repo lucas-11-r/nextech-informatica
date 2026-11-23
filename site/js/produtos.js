@@ -1,5 +1,3 @@
-// Catálogo com busca, categoria, faixa de preço, ordenação e paginação.
-
 const estadoCatalogo = {
     nome: "",
     categoria: "",
@@ -327,7 +325,6 @@ async function carregarFiltros() {
         estadoCatalogo.limites.min = Math.floor(Number(dados.preco_min) || 0)
         estadoCatalogo.limites.max = Math.ceil(Number(dados.preco_max) || 0)
 
-        // Aceita categorias no singular/parcial, como "processador".
         if (estadoCatalogo.categoria) {
             const exata = dados.categorias.find(categoria =>
                 categoria.nome.toLowerCase() === estadoCatalogo.categoria.toLowerCase()

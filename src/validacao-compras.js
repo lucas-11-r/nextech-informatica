@@ -1,6 +1,3 @@
-// Validação da lista de produtos e cálculo dos valores de uma compra.
-// Os valores finais são sempre calculados aqui, nunca aceitos do navegador.
-
 const MAX_ITENS = 50
 const QUANTIDADE_MAXIMA = 999
 const CUPOM_VALIDO = "NEXTECH10"
@@ -10,11 +7,9 @@ const VALOR_FRETE = 29.90
 const VIACEP_URL = "https://viacep.com.br/ws/"
 const TIMEOUT_CEP = 5000
 
-const UFS_VALIDAS = Object.freeze([
-    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
-    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
-    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
-])
+const UFS_VALIDAS = Object.freeze(
+    "AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split(" ")
+)
 
 const LIMITES_ENTREGA = Object.freeze({
     endereco: 120,
@@ -32,10 +27,6 @@ function reais(valorEmCentavos) {
     return Number((valorEmCentavos / 100).toFixed(2))
 }
 
-/**
- * Normaliza e agrupa os itens enviados pelo cliente.
- * Aceita produto_id/produtoId/id e quantidade/qtd no corpo.
- */
 function validarItens(entrada) {
     if (!Array.isArray(entrada) || entrada.length === 0) {
         return { erro: "Informe ao menos um produto na compra" }
@@ -95,10 +86,6 @@ function textoEntrega(valor, limite) {
     return String(valor === undefined || valor === null ? "" : valor).trim().slice(0, limite)
 }
 
-/**
- * Valida e normaliza o endereço de entrega enviado no checkout.
- * Retorna { erro } ou { entrega }.
- */
 function validarEntrega(entrada) {
     if (!entrada || typeof entrada !== "object" || Array.isArray(entrada)) {
         return { erro: "Informe os dados de entrega" }
@@ -136,11 +123,6 @@ function validarEntrega(entrada) {
     return { entrega }
 }
 
-/**
- * Confirma no ViaCEP que o CEP existe. Falha do serviço externo não bloqueia
- * a compra: o formato e os campos obrigatórios já foram validados localmente.
- * Retorna { erro } ou { ok: true }.
- */
 async function verificarCep(cep) {
     let controle = null
     let temporizador = null
@@ -169,10 +151,6 @@ async function verificarCep(cep) {
     }
 }
 
-/**
- * Calcula subtotal, desconto, frete e total em reais.
- * `itens` deve conter preco_unitario e quantidade.
- */
 function calcularTotais(itens, cupom) {
     const subtotalCentavos = itens.reduce((soma, item) => {
         return soma + centavos(item.preco_unitario) * Number(item.quantidade)

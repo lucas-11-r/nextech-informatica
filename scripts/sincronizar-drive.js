@@ -1,14 +1,3 @@
-// Sincroniza os IDs das imagens do Google Drive com data/imagens-drive.js.
-//
-// Uso:
-//   npm run drive:sync                 # usa GOOGLE_DRIVE_FOLDER_ID do .env
-//   npm run drive:sync -- <link ou ID> # usa a pasta informada
-//
-// A pasta precisa estar compartilhada como "qualquer pessoa com o link".
-// O script lê a listagem pública da pasta, casa os nomes dos arquivos com os
-// produtos (pelo padrão "NN-slug" ou pelo nome do produto) e reescreve
-// data/imagens-drive.js. Depois rode `npm run migrate` para gravar os IDs
-// no banco.
 
 const fs = require("fs")
 const path = require("path")
@@ -18,7 +7,7 @@ function dotenv() {
     try {
         require("dotenv").config({ quiet: true })
     } catch {
-        // dotenv é opcional para este script.
+
     }
 }
 
@@ -44,7 +33,7 @@ function extrairId(entrada) {
     return /^[A-Za-z0-9_-]{10,}$/.test(texto) ? texto : ""
 }
 
-// A listagem HTML do Drive devolve entidades como &quot; no nome do arquivo.
+
 function decodificarHtml(texto) {
     return String(texto || "")
         .replace(/&quot;/gi, '"')
@@ -55,7 +44,7 @@ function decodificarHtml(texto) {
         .replace(/&nbsp;/gi, " ")
 }
 
-// Compara nomes ignorando acentos, caixa, pontuação e espaços.
+
 function normalizarNome(texto) {
     return String(texto || "")
         .normalize("NFD")
@@ -68,9 +57,7 @@ function nomeSemExtensao(nome) {
     return String(nome || "").replace(/\.[^.]+$/, "")
 }
 
-// Lista a pasta pela API oficial do Drive (v3). Exige uma chave de API
-// pública (GOOGLE_DRIVE_API_KEY) — não é necessário login, desde que a
-// pasta esteja compartilhada como "qualquer pessoa com o link".
+
 async function listarPastaApi(idPasta) {
     const arquivos = []
     let pageToken = ""
@@ -112,9 +99,7 @@ async function listarPastaApi(idPasta) {
     return arquivos
 }
 
-// Alternativa sem chave de API. O embeddedfolderview foi descontinuado
-// pelo Google e pode devolver a página sem a listagem; nesse caso a
-// mensagem abaixo orienta a configurar a chave.
+
 async function listarPasta(idPasta) {
     const url = "https://drive.google.com/embeddedfolderview?id=" +
         encodeURIComponent(idPasta) + "#list"
@@ -227,9 +212,7 @@ async function principal() {
         const nomeProduto = normalizarNome(produto.nome)
         let achado = porBase.get(base.toLowerCase()) || porNome.get(nomeProduto)
 
-        // A pasta pode usar o nome completo do produto (ex.: "Monitor LG 21.5"
-        // 75Hz Full HD.jpg"). Aceita a correspondência só quando é única,
-        // para não atribuir a imagem errada a outro produto.
+
         if (!achado && nomeProduto) {
             const candidatos = arquivos.filter(arquivo => {
                 const nome = normalizarNome(nomeSemExtensao(arquivo.nome))

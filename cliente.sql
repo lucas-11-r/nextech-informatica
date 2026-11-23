@@ -1,6 +1,3 @@
--- NexTech Informática - estrutura da tabela de clientes.
--- A criação também é feita automaticamente por migration.js.
-
 CREATE TABLE IF NOT EXISTS cliente (
     id INT NOT NULL AUTO_INCREMENT,
     nome VARCHAR(100) NOT NULL,
@@ -13,6 +10,3 @@ CREATE TABLE IF NOT EXISTS cliente (
     UNIQUE KEY uq_cliente_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Cliente demo criado pela migration (senha criptografada com bcrypt):
--- email: demo@nextech.com
--- senha: demo1234

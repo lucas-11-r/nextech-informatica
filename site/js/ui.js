@@ -1,5 +1,3 @@
-// Componentes reutilizáveis: cards, preços, estrelas, toast e carrinho local.
-
 const IMG_PADRAO = "data:image/svg+xml;utf8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600">' +
     '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#061a2e"/><stop offset="1" stop-color="#0b3b6f"/></linearGradient></defs>' +
@@ -131,9 +129,6 @@ function mostrarToast(mensagem, tipo = "success") {
     }
 }
 
-/* ----------------------------- Carrinho ----------------------------- */
-// Cópia em memória: usada quando o navegador bloqueia o localStorage, para o
-// carrinho continuar funcionando (mesmo que só nesta aba).
 let carrinhoMemoria = []
 let avisoSemArmazenamento = false
 let armazenamentoDisponivel
@@ -200,7 +195,6 @@ function avisarCarrinhoSemArmazenamento() {
     }
 }
 
-// Aceita o formato atual e também carrinhos antigos (produto_id/quantidade).
 function normalizarItemCarrinho(item) {
     if (!item || typeof item !== "object") return null
 
@@ -235,7 +229,6 @@ function getCarrinho() {
         }
     }
 
-    // Sem nada no armazenamento, cai para a cópia em memória (bloqueio/quota).
     if (!lista.length && carrinhoMemoria.length) lista = carrinhoMemoria
 
     const porId = new Map()
@@ -263,7 +256,7 @@ function salvarCarrinho(carrinho) {
     try {
         window.dispatchEvent(new CustomEvent("carrinho:alterado", { detail: { carrinho } }))
     } catch {
-        // Navegadores muito antigos não têm CustomEvent: segue sem notificar.
+
     }
     return salvo
 }
@@ -321,7 +314,7 @@ function limparCarrinho() {
     try {
         window.dispatchEvent(new CustomEvent("carrinho:alterado", { detail: { carrinho: [] } }))
     } catch {
-        // Sem CustomEvent: nada a notificar.
+
     }
 }
 
@@ -352,7 +345,6 @@ function atualizarBadgeCarrinho(animar = false) {
     })
 }
 
-// Dá um retorno visual no botão do card depois de adicionar.
 function marcarProdutoAdicionado(botao) {
     if (!botao) return
     if (!botao.dataset.rotuloOriginal) botao.dataset.rotuloOriginal = botao.innerHTML
@@ -366,7 +358,6 @@ function marcarProdutoAdicionado(botao) {
     }, 1800)
 }
 
-/* ----------------------------- Favoritos ----------------------------- */
 function getFavoritos() {
     try {
         const dados = JSON.parse(lerDoArmazenamento(CHAVE_FAVORITOS) || "[]")
@@ -388,7 +379,6 @@ function toggleFavorito(id) {
     return favoritos.includes(numero)
 }
 
-/* ----------------------------- Cards ----------------------------- */
 function criarCardProduto(produto) {
     const card = criarElemento("article", "product-card")
     const desconto = calcularDesconto(produto.preco, produto.preco_antigo)

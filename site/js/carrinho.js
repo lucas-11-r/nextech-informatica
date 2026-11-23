@@ -1,5 +1,3 @@
-// Carrinho: itens no localStorage, totais, cupom, frete e finalização com login.
-
 const CUPOM_VALIDO = "NEXTECH10"
 const DESCONTO_CUPOM = 0.10
 const FRETE_GRATIS_A_PARTIR = 299
@@ -7,11 +5,16 @@ const VALOR_FRETE = 29.90
 
 const CHAVE_CHECKOUT = "nextech_checkout"
 const VIACEP_URL = "https://viacep.com.br/ws/"
-const UFS_VALIDAS = [
-    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
-    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
-    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
-]
+const UFS_VALIDAS = "AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split(" ")
+const CAMPOS_ENTREGA = {
+    cep: "checkout-cep",
+    endereco: "checkout-endereco",
+    numero: "checkout-numero",
+    complemento: "checkout-complemento",
+    bairro: "checkout-bairro",
+    cidade: "checkout-cidade",
+    uf: "checkout-uf"
+}
 
 const ROTULOS_PAGAMENTO = {
     pix: "PIX",
@@ -24,8 +27,6 @@ const estadoCarrinho = {
     desconto: 0
 }
 
-// Estado da consulta de CEP: o endereço preenchido automaticamente é uma
-// comodidade; a validação que bloqueia a compra continua sendo feita na API.
 const estadoCep = { digitos: "", encontrado: null, consultando: false, falhaRede: false }
 const cacheCep = new Map()
 let consultaCepAtual = 0
@@ -53,11 +54,9 @@ function salvarDadosEntrega(dados) {
     try {
         localStorage.setItem(CHAVE_CHECKOUT, valor)
     } catch {
-        // Sem armazenamento: os dados valem só para este checkout.
+
     }
 }
-
-/* --------------------------- CEP / ViaCEP --------------------------- */
 
 function digitosCep(valor) {
     return String(valor === undefined || valor === null ? "" : valor).replace(/\D/g, "").slice(0, 8)
@@ -152,7 +151,6 @@ async function consultarCep(campo, status) {
         if (!resultado.falhaRede) cacheCep.set(digitos, resultado)
     }
 
-    // Descarta respostas de consultas antigas se o CEP mudou enquanto buscava.
     if (sequencia !== consultaCepAtual || digitosCep(campo.value) !== digitos) return
 
     estadoCep.consultando = false
@@ -179,8 +177,6 @@ const consultarCepDebounce = typeof debounce === "function"
     ? debounce((campo, status) => consultarCep(campo, status), 350)
     : null
 
-// Busca os dados atuais do catálogo para o carrinho nunca mostrar produto
-// removido, preço antigo ou estoque desatualizado.
 async function sincronizarItensComCatalogo() {
     const itens = getCarrinho()
     if (!itens.length) return
@@ -225,8 +221,7 @@ async function sincronizarItensComCatalogo() {
                 qtd: quantidade
             }
         } catch (error) {
-            // Só remove quando a própria API confirma que o produto não existe.
-            // Uma página 404 de outro servidor não pode esvaziar o carrinho.
+
             const naoExiste = error &&
                 error.status === 404 &&
                 error.dados &&
@@ -238,7 +233,6 @@ async function sincronizarItensComCatalogo() {
                 return null
             }
 
-            // Falha de rede/origem: mantém os dados que já estavam salvos.
             return item
         }
     }))).filter(Boolean)
@@ -520,8 +514,6 @@ function desenharCarrinho() {
     document.getElementById("carrinho-resumo").append(renderizarResumo(resumo))
 }
 
-/* --------------------------- Finalização --------------------------- */
-
 function montarHtmlItens(itens) {
     return itens.map(item =>
         '<div class="resumo-item"><span>' + item.qtd + '× ' + escapeHtml(item.nome) + '</span><span>' +
@@ -565,20 +557,11 @@ function preencherCheckout(resumo) {
     mostrarStatusCep(obterStatusCep(), "")
 
     const salvo = getDadosEntrega()
-    const campos = {
-        "checkout-cep": salvo.cep,
-        "checkout-endereco": salvo.endereco,
-        "checkout-numero": salvo.numero,
-        "checkout-complemento": salvo.complemento,
-        "checkout-bairro": salvo.bairro,
-        "checkout-cidade": salvo.cidade,
-        "checkout-uf": salvo.uf
-    }
 
-    Object.entries(campos).forEach(([id, valor]) => {
+    Object.entries(CAMPOS_ENTREGA).forEach(([chave, id]) => {
         const campo = document.getElementById(id)
         if (!campo) return
-        campo.value = valor || ""
+        campo.value = salvo[chave] || ""
         campo.classList.remove("is-invalid")
     })
 
@@ -666,8 +649,6 @@ function renderizarSucesso(pedido) {
     atualizarBadgeCarrinho()
 }
 
-/* --------------------------- Checkout --------------------------- */
-
 function mostrarAlertaCheckout(mensagem) {
     const caixa = document.getElementById("checkout-alerta")
     if (!caixa) return
@@ -697,24 +678,20 @@ function validarCheckout() {
         return campo ? campo.value.trim() : ""
     }
 
-    const dados = {
-        cep: valor("checkout-cep").replace(/\D/g, ""),
-        endereco: valor("checkout-endereco"),
-        numero: valor("checkout-numero"),
-        complemento: valor("checkout-complemento"),
-        bairro: valor("checkout-bairro"),
-        cidade: valor("checkout-cidade"),
-        uf: valor("checkout-uf").toUpperCase(),
-        pagamento: (document.querySelector('input[name="pagamento"]:checked') || {}).value || "pix"
-    }
+    const dados = Object.fromEntries(
+        Object.entries(CAMPOS_ENTREGA).map(([chave, id]) => [chave, valor(id)])
+    )
+    dados.cep = dados.cep.replace(/\D/g, "")
+    dados.uf = dados.uf.toUpperCase()
+    dados.pagamento = (document.querySelector('input[name="pagamento"]:checked') || {}).value || "pix"
 
     const regras = [
-        ["checkout-cep", dados.cep.length === 8, "Informe um CEP válido com 8 dígitos."],
-        ["checkout-endereco", dados.endereco.length >= 3, "Informe o endereço de entrega."],
-        ["checkout-numero", dados.numero.length > 0, "Informe o número do endereço."],
-        ["checkout-bairro", dados.bairro.length >= 2, "Informe o bairro."],
-        ["checkout-cidade", dados.cidade.length >= 2, "Informe a cidade."],
-        ["checkout-uf", UFS_VALIDAS.includes(dados.uf), "Informe uma UF válida."]
+        [CAMPOS_ENTREGA.cep, dados.cep.length === 8, "Informe um CEP válido com 8 dígitos."],
+        [CAMPOS_ENTREGA.endereco, dados.endereco.length >= 3, "Informe o endereço de entrega."],
+        [CAMPOS_ENTREGA.numero, dados.numero.length > 0, "Informe o número do endereço."],
+        [CAMPOS_ENTREGA.bairro, dados.bairro.length >= 2, "Informe o bairro."],
+        [CAMPOS_ENTREGA.cidade, dados.cidade.length >= 2, "Informe a cidade."],
+        [CAMPOS_ENTREGA.uf, UFS_VALIDAS.includes(dados.uf), "Informe uma UF válida."]
     ]
 
     for (const [id, valido, mensagem] of regras) {
@@ -734,7 +711,7 @@ function validarCheckout() {
             return null
         }
         if (estadoCep.encontrado === false) {
-            const campo = document.getElementById("checkout-cep")
+            const campo = document.getElementById(CAMPOS_ENTREGA.cep)
             if (campo) {
                 campo.classList.add("is-invalid")
                 campo.focus()
@@ -764,7 +741,7 @@ function validarCheckout() {
 }
 
 function configurarCheckout() {
-    const cep = document.getElementById("checkout-cep")
+    const cep = document.getElementById(CAMPOS_ENTREGA.cep)
     const statusCep = obterStatusCep()
 
     if (cep) {
@@ -881,8 +858,6 @@ configurarConfirmacao()
 renderizarCarrinho()
 sincronizarItensComCatalogo()
 
-// Mantém a página sincronizada quando o carrinho muda em outra aba ou por
-// outra parte do site (badge do cabeçalho, botões "adicionar", etc.).
 window.addEventListener("carrinho:alterado", renderizarCarrinho)
 window.addEventListener("storage", event => {
     if (event.key === "nextech_carrinho") renderizarCarrinho()

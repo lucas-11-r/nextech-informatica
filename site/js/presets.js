@@ -1,5 +1,3 @@
-// Presets de montagem usados na home e na página Monte seu PC.
-// Os IDs correspondem aos produtos de data/produtos.js.
 const PRESETS_PC = Object.freeze({
     escritorio: {
         nome: "PC Escritório",

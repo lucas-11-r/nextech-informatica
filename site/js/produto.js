@@ -1,5 +1,3 @@
-// Página de detalhe do produto: dados da API, quantidade, carrinho e relacionados.
-
 const estadoDetalhe = {
     produto: null,
     quantidade: 1

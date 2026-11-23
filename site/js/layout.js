@@ -1,5 +1,3 @@
-// Cabeçalho, rodapé e estado de autenticação compartilhados por todas as páginas.
-
 function renderLayout() {
     const header = document.getElementById("site-header")
     const footer = document.getElementById("site-footer")
@@ -170,8 +168,6 @@ function atualizarNavbar() {
     }
 }
 
-// Confere a sessão na API para mostrar o nome/email reais no cabeçalho, mesmo
-// quando o navegador guardou apenas o token (sessões antigas).
 async function sincronizarSessao() {
     if (!estaLogado()) return
 
@@ -196,8 +192,6 @@ function sairDaConta() {
         location.href = "index.html"
     }, 450)
 }
-
-/* ------------------------- Prévia do carrinho ------------------------- */
 
 function criarLinhaMiniCarrinho(item) {
     const linha = document.createElement("div")
@@ -283,8 +277,6 @@ function marcarNavAtiva() {
     })
 }
 
-// Se o navegador bloqueia o localStorage (comum ao abrir o HTML por file://),
-// o login e o carrinho não conseguem passar de uma página para outra.
 function armazenamentoLocalFunciona() {
     try {
         localStorage.setItem("__nextech_sonda__", "1")
@@ -296,7 +288,7 @@ function armazenamentoLocalFunciona() {
 }
 
 function avisarArmazenamento() {
-    // ui.js já sabe se existe localStorage ou, na falta dele, sessionStorage.
+
     const disponivel = typeof obterArmazenamento === "function"
         ? obterArmazenamento()
         : armazenamentoLocalFunciona()
@@ -322,7 +314,6 @@ function avisarArmazenamento() {
     aviso.querySelector("button").addEventListener("click", () => aviso.remove())
 }
 
-// Garante o container de toasts em todas as páginas.
 document.addEventListener("DOMContentLoaded", () => {
     if (!document.getElementById("toast-container")) {
         const container = document.createElement("div")
@@ -333,7 +324,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 })
 
-// Mantém a prévia do carrinho sincronizada em todas as páginas.
 window.addEventListener("carrinho:alterado", () => {
     atualizarBadgeCarrinho()
     atualizarMiniCarrinho()

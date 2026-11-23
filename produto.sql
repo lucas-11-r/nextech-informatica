@@ -1,6 +1,3 @@
--- NexTech Informática - estrutura e carga inicial do catálogo (50 produtos)
--- Execute no MySQL Workbench ou no terminal, no banco definido em DB_DATABASE.
-
 DROP TABLE IF EXISTS produto;
 
 CREATE TABLE produto (
@@ -79,7 +76,6 @@ VALUES
 (49, 'Formatação e Otimização de PC', 'Backup dos arquivos, formatação, instalação de programas essenciais e otimização de desempenho.', 'Serviços', 'NexTech', 99.90, 114.90, 999, 0, 'assets/img/produtos/49-formatacao.svg', '1fxnDBTWY7_zqOL0J1ouvGvDWIAZjHuPl', 1, 4.80, 240),
 (50, 'Montagem de PC + Teste de Estresse', 'Montagem completa, cable management, instalação de sistema e teste de estabilidade por 24h.', 'Serviços', 'NexTech', 199.90, 229.90, 999, 1, 'assets/img/produtos/50-montagem.svg', '1w9I338_kqc7awTU7Ezq8ADkz5vJtqvSQ', 1, 4.90, 150);
 
--- Consultas de teste
 SELECT COUNT(*) AS total FROM produto;
 SELECT * FROM produto ORDER BY id LIMIT 10;
 SELECT * FROM produto WHERE categoria = 'Processadores';

@@ -1,5 +1,3 @@
-// Cria o arquivo .env a partir do modelo, sem depender de comandos do sistema.
-// Uso: npm run setup
 const fs = require("fs")
 const path = require("path")
 

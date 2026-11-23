@@ -1,5 +1,3 @@
-// Perfil: consome GET /cliente/perfil e GET /compras com o JWT.
-
 function formatarData(iso) {
     const data = new Date(iso)
     if (Number.isNaN(data.getTime())) return "—"

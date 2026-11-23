@@ -1,5 +1,3 @@
-// Testes de integração: sobem o Express em uma porta livre e conversam com o MySQL real.
-// Uso: npm test
 
 const test = require("node:test")
 const assert = require("node:assert/strict")

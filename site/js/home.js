@@ -1,5 +1,3 @@
-// Página inicial: destaques, categorias, presets de PC e serviços.
-
 const CATEGORIAS_HOME = [
     { nome: "Processadores", icone: "bi-cpu" },
     { nome: "Placas de Vídeo", icone: "bi-gpu-card" },

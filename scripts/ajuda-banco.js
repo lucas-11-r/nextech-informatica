@@ -1,6 +1,3 @@
-// Traduz os erros mais comuns de conexão com o MySQL em dicas práticas.
-// Usado por migration.js, scripts/criar-banco.js e scripts/testar-banco.js.
-
 function dicasBanco(error) {
     if (!error) return []
 

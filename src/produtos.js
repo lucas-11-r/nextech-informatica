@@ -23,7 +23,7 @@ const CACHE_DRIVE = new Map()
 function adicionarUrlImagem(produto) {
     return {
         ...produto,
-        // A versão muda a URL e força o navegador a buscar a imagem atualizada.
+
         imagem_url: "/produtos/" + produto.id + "/imagem?v=" + encodeURIComponent(VERSAO_IMAGEM)
     }
 }
@@ -41,8 +41,7 @@ async function buscarImagemDrive(id) {
     if (emCache && emCache.expira > Date.now()) return emCache
 
     try {
-        // Download direto evita a miniatura cached do Google quando o arquivo
-        // é substituído dentro da mesma pasta do Drive.
+
         const url = "https://drive.google.com/uc?export=download&id=" + encodeURIComponent(id)
         const resposta = await fetch(url, {
             redirect: "follow",
@@ -92,7 +91,6 @@ async function lerImagemPadrao() {
     }
 }
 
-// GET /produtos (e /produto) -> lista paginada com filtros e ordenação
 router.get("/", async (req, res, next) => {
     try {
         const { erro, filtros } = validarQueryProdutos(req.query)
@@ -129,7 +127,6 @@ router.get("/", async (req, res, next) => {
     }
 })
 
-// GET /produtos/categorias -> categorias com contagem
 router.get("/categorias", async (req, res, next) => {
     try {
         const [linhas] = await db.pool.query(
@@ -151,7 +148,6 @@ router.get("/categorias", async (req, res, next) => {
     }
 })
 
-// GET /produtos/filtros -> faixa de preço + categorias
 router.get("/filtros", async (req, res, next) => {
     try {
         const [resumo] = await db.pool.query(
@@ -180,7 +176,6 @@ router.get("/filtros", async (req, res, next) => {
     }
 })
 
-// GET /produtos/destaques -> produtos em destaque
 router.get("/destaques", async (req, res, next) => {
     try {
         const [produtos] = await db.pool.query(
@@ -195,7 +190,6 @@ router.get("/destaques", async (req, res, next) => {
     }
 })
 
-// GET /produtos/todos -> lista completa em array (compatibilidade)
 router.get("/todos", async (req, res, next) => {
     try {
         const { erro, filtros } = validarQueryProdutos(req.query)
@@ -212,9 +206,6 @@ router.get("/todos", async (req, res, next) => {
     }
 })
 
-// GET /produtos/:id/imagem -> imagem servida pelo próprio servidor.
-// A origem é o Google Drive (imagem_drive_id), com o SVG genérico como
-// fallback caso o Drive falhe.
 router.get("/:id/imagem", async (req, res, next) => {
     try {
         const id = Number(req.params.id)
@@ -249,7 +240,6 @@ router.get("/:id/imagem", async (req, res, next) => {
     }
 })
 
-// GET /produtos/:id -> produto específico
 router.get("/:id", async (req, res, next) => {
     try {
         const id = Number(req.params.id)

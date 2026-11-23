@@ -35,7 +35,6 @@ function texto(valor, limite) {
     return String(valor === undefined || valor === null ? "" : valor).trim().slice(0, limite)
 }
 
-// POST /cliente -> cadastro com senha criptografada
 router.post("/cliente", async (req, res, next) => {
     try {
         const body = req.body || {}
@@ -96,7 +95,6 @@ router.post("/cliente", async (req, res, next) => {
     }
 })
 
-// POST /login -> confere email + senha e devolve o JWT
 router.post("/login", async (req, res, next) => {
     try {
         const body = req.body || {}
@@ -113,7 +111,6 @@ router.post("/login", async (req, res, next) => {
         )
         const cliente = linhas[0]
 
-        // Mesma resposta para email inexistente e senha errada.
         if (!cliente) {
             return res.status(401).json({ erro: "Email ou senha inválidos" })
         }
@@ -139,7 +136,6 @@ router.post("/login", async (req, res, next) => {
     }
 })
 
-// GET /cliente/perfil -> rota protegida por JWT
 router.get("/cliente/perfil", autenticar, async (req, res, next) => {
     try {
         const [linhas] = await db.pool.query(

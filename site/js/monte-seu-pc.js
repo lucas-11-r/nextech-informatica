@@ -1,5 +1,3 @@
-// Monte seu PC: presets, seleção de componentes, serviços e total em tempo real.
-
 const ETAPAS_MONTAGEM = [
     { chave: "cpu", rotulo: "Processador", categoria: "Processadores", icone: "bi-cpu", obrigatorio: true },
     { chave: "mb", rotulo: "Placa-mãe", categoria: "Placas-mãe", icone: "bi-motherboard", obrigatorio: true },
@@ -45,8 +43,6 @@ function configurarEstado(produtos) {
         estadoMontagem.porCategoria.get(produto.categoria).push(produto)
     })
 }
-
-/* ------------------------------ Presets ------------------------------ */
 
 function renderizarPresets() {
     const container = document.getElementById("presets-builder")
@@ -118,8 +114,6 @@ function sincronizarControles() {
         botao.classList.toggle("ativo", botao.dataset.preset === estadoMontagem.presetAtivo)
     })
 }
-
-/* --------------------------- Componentes --------------------------- */
 
 function criarEtapa(etapa) {
     const linha = document.createElement("div")
@@ -228,8 +222,6 @@ function renderizarPerifericos() {
         container.append(label)
     })
 }
-
-/* ------------------------------ Resumo ------------------------------ */
 
 function itensSelecionados() {
     const itens = []

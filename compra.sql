@@ -1,6 +1,3 @@
--- NexTech Informática - tabelas de compras.
--- A criação também é feita automaticamente por migration.js.
-
 CREATE TABLE IF NOT EXISTS compra (
     id INT NOT NULL AUTO_INCREMENT,
     cliente_id INT NOT NULL,
@@ -34,7 +31,6 @@ CREATE TABLE IF NOT EXISTS compra_item (
         REFERENCES produto(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Consultas de teste
 SELECT * FROM compra ORDER BY data_compra DESC;
 SELECT c.codigo, i.nome_produto, i.quantidade, i.preco_unitario, i.subtotal
 FROM compra c

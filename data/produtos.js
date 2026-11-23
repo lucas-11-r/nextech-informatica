@@ -1,11 +1,7 @@
-// Catálogo da NexTech Informática.
-// Este arquivo é a fonte única dos 50 produtos: a migration e o produto.sql
-// são gerados a partir dele.
-
 const imagensDrive = require("./imagens-drive")
 
 const produtos = [
-    // Processadores (5)
+
     {
         nome: "Processador AMD Ryzen 5 5600 3.5GHz",
         descricao: "Processador de 6 núcleos e 12 threads, ótimo custo-benefício para jogos e produtividade. Cooler Wraith Stealth incluso.",
@@ -37,7 +33,6 @@ const produtos = [
         estoque: 7, destaque: 1, avaliacao: 4.9, avaliacoes: 54, icone: "cpu", slug: "ryzen-5-7600"
     },
 
-    // Placas de vídeo (5)
     {
         nome: "Placa de Vídeo NVIDIA GeForce RTX 3050 8GB",
         descricao: "Ray tracing e DLSS para jogos em Full HD. 8GB GDDR6, três saídas DisplayPort e HDMI.",
@@ -69,7 +64,6 @@ const produtos = [
         estoque: 3, destaque: 0, avaliacao: 4.8, avaliacoes: 34, icone: "gpu", slug: "rx-7800-xt"
     },
 
-    // Placas-mãe (4)
     {
         nome: "Placa-mãe ASUS Prime B550M-A",
         descricao: "Micro-ATX com socket AM4, DDR4, PCIe 4.0, M.2 NVMe e VRM reforçado para Ryzen 5000.",
@@ -95,7 +89,6 @@ const produtos = [
         estoque: 3, destaque: 1, avaliacao: 4.9, avaliacoes: 28, icone: "motherboard", slug: "asus-x670e"
     },
 
-    // Memórias (4)
     {
         nome: "Memória Kingston Fury Beast 8GB DDR4 3200MHz",
         descricao: "Módulo de 8GB DDR4 com perfil XMP 2.0, dissipador de alumínio e alta compatibilidade.",
@@ -121,7 +114,6 @@ const produtos = [
         estoque: 12, destaque: 0, avaliacao: 4.7, avaliacoes: 66, icone: "ram", slug: "fury-16gb-ddr5"
     },
 
-    // Armazenamento (4)
     {
         nome: "SSD Kingston A400 240GB SATA",
         descricao: "SSD SATA de 240GB para acelerar a inicialização do sistema e reduzir o tempo de carregamento.",
@@ -147,7 +139,6 @@ const produtos = [
         estoque: 10, destaque: 0, avaliacao: 4.5, avaliacoes: 75, icone: "ssd", slug: "barracuda-2tb"
     },
 
-    // Fontes (3)
     {
         nome: "Fonte Corsair CV550 550W 80 Plus Bronze",
         descricao: "Fonte de 550W com certificação 80 Plus Bronze, proteções elétricas e ventoinha silenciosa.",
@@ -167,7 +158,6 @@ const produtos = [
         estoque: 6, destaque: 1, avaliacao: 4.9, avaliacoes: 64, icone: "psu", slug: "xpg-750w"
     },
 
-    // Gabinetes (3)
     {
         nome: "Gabinete Redragon Wideload Lite Mid Tower",
         descricao: "Mid Tower com lateral de vidro temperado, suporte a water cooler de 240mm e três fans inclusos.",
@@ -187,7 +177,6 @@ const produtos = [
         estoque: 5, destaque: 0, avaliacao: 4.7, avaliacoes: 39, icone: "case", slug: "nr200p"
     },
 
-    // Coolers (2)
     {
         nome: "Air Cooler DeepCool AK400",
         descricao: "Cooler torre com quatro heatpipes, ventoinha de 120mm e desempenho silencioso para CPUs de até 220W.",
@@ -201,7 +190,6 @@ const produtos = [
         estoque: 6, destaque: 0, avaliacao: 4.7, avaliacoes: 48, icone: "cooler", slug: "lt520"
     },
 
-    // Monitores (3)
     {
         nome: "Monitor LG 21.5\" 75Hz Full HD",
         descricao: "Monitor de 21,5 polegadas Full HD com painel IPS, 75Hz e conexões HDMI/VGA para escritório e estudo.",
@@ -221,7 +209,6 @@ const produtos = [
         estoque: 5, destaque: 0, avaliacao: 4.9, avaliacoes: 73, icone: "monitor", slug: "odyssey-g4"
     },
 
-    // Periféricos (5)
     {
         nome: "Teclado Mecânico Redragon Kumara RGB",
         descricao: "Teclado mecânico ABNT2 com switches Outemu Red, iluminação RGB e estrutura resistente.",
@@ -253,7 +240,6 @@ const produtos = [
         estoque: 7, destaque: 0, avaliacao: 4.8, avaliacoes: 95, icone: "webcam", slug: "c920s"
     },
 
-    // Notebooks (2)
     {
         nome: "Notebook Lenovo IdeaPad 1 Athlon 8GB 256GB",
         descricao: "Notebook para estudo e escritório com tela Full HD de 15,6\", 8GB de RAM e SSD de 256GB.",
@@ -267,7 +253,6 @@ const produtos = [
         estoque: 4, destaque: 1, avaliacao: 4.8, avaliacoes: 42, icone: "laptop", slug: "nitro-v15"
     },
 
-    // Smartphones (3)
     {
         nome: "Smartphone Samsung Galaxy A15 128GB",
         descricao: "Tela Super AMOLED de 6,5\", 128GB de armazenamento, câmera de 50MP e bateria de 5000mAh.",
@@ -287,7 +272,6 @@ const produtos = [
         estoque: 5, destaque: 0, avaliacao: 4.9, avaliacoes: 60, icone: "phone", slug: "galaxy-s24"
     },
 
-    // PCs prontos (4)
     {
         nome: "PC Escritório NexTech Office i3 8GB 256GB",
         descricao: "Computador pronto para escritório com Intel Core i3, 8GB de RAM, SSD 256GB e Windows 11 instalado.",
@@ -313,7 +297,6 @@ const produtos = [
         estoque: 5, destaque: 0, avaliacao: 4.6, avaliacoes: 29, icone: "desktop", slug: "pc-play"
     },
 
-    // Serviços (3)
     {
         nome: "Instalação do Windows 11 + Drivers",
         descricao: "Instalação limpa do Windows 11, ativação, drivers atualizados e configuração inicial.",
@@ -339,7 +322,6 @@ module.exports = produtos.map((produto, indice) => {
     const base = String(id).padStart(2, "0") + "-" + produto.slug;
     const arquivo = base + ".svg";
 
-    // O mapa do Drive pode usar o nome com ou sem extensão.
     const driveId = imagensDrive[arquivo] || imagensDrive[base] || null;
 
     return Object.freeze({

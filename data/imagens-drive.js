@@ -1,12 +1,3 @@
-// Mapa entre o arquivo da imagem do produto e o ID do arquivo no Google Drive.
-//
-// Gerado por `npm run drive:sync`. Pode ser editado à mão:
-// a chave aceita o nome do arquivo com ou sem extensão.
-//
-// Exemplo:
-// "01-ryzen-5-5600": "1AbCdEfGhIjKlMnOpQrStUvWxYz"
-//
-// Se o mapa estiver vazio, o servidor usa a imagem genérica de fallback.
 module.exports = {
     "01-ryzen-5-5600": "1tQhGXVAc6zni0oi9rSNSxMwAmJWhzO3U",
     "02-athlon-3000g": "1ljLh1k21biSpcfQeA5zZsZXM0SzvYiws",

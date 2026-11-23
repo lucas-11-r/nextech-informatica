@@ -1,5 +1,3 @@
-// Cadastro: máscaras, validação no navegador e envio para POST /cliente.
-
 function somenteDigitos(valor) {
     return String(valor || "").replace(/\D/g, "")
 }

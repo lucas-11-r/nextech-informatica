@@ -1,5 +1,3 @@
-// Aplica em data/produtos.js os preços e estoques pesquisados em data/precos-pesquisados.js.
-// Uso: node scripts/aplicar-precos.js
 const fs = require("fs")
 const path = require("path")
 const precos = require("../data/precos-pesquisados")

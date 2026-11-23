@@ -1,6 +1,3 @@
-// Regras de validação e montagem segura das consultas de produtos.
-// Nenhum texto do usuário é concatenado diretamente no SQL.
-
 const PRODUTOS_POR_PAGINA = 10
 
 const ORDENACOES = Object.freeze({
@@ -29,10 +26,6 @@ function escaparLike(valor) {
     return String(valor).replace(/[\\%_]/g, "\\$&")
 }
 
-/**
- * Valida os parâmetros de GET /produtos.
- * Retorna { erro } ou { filtros }.
- */
 function validarQueryProdutos(query = {}) {
     const filtros = {
         nome: texto(query.nome, 120) || undefined,
@@ -71,9 +64,6 @@ function validarQueryProdutos(query = {}) {
     return { filtros }
 }
 
-/**
- * Monta o WHERE parametrizado a partir dos filtros já validados.
- */
 function montarFiltrosSql(filtros) {
     const condicoes = []
     const valores = []
@@ -84,8 +74,7 @@ function montarFiltrosSql(filtros) {
     }
 
     if (filtros.categoria) {
-        // LIKE permite que "processador" encontre "Processadores",
-        // mantendo o filtro exato funcionando para o nome completo da categoria.
+
         condicoes.push("categoria LIKE ?")
         valores.push("%" + escaparLike(filtros.categoria) + "%")
     }

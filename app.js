@@ -13,20 +13,15 @@ const app = express()
 app.use(cors())
 app.use(express.json({ limit: "1mb" }))
 
-// Front-end estático servido pelo próprio Express
 app.use(express.static(path.join(__dirname, "site")))
 
-// Rotas de autenticação: /cliente, /login e /cliente/perfil
 app.use(clientesRouter)
 
-// Rotas de produtos: /produtos e o alias /produto
 app.use("/produtos", produtosRouter)
 app.use("/produto", produtosRouter)
 
-// Compras: histórico e registro protegidos por JWT
 app.use("/compras", comprasRouter)
 
-// Teste rápido de conexão com o banco
 app.get("/health", async (req, res) => {
     try {
         const [linhas] = await db.pool.query(

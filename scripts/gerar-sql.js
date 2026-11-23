@@ -1,5 +1,3 @@
-// Gera o arquivo produto.sql a partir de data/produtos.js.
-// Uso: npm run sql
 const fs = require("fs")
 const path = require("path")
 const produtos = require("../data/produtos")

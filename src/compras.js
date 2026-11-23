@@ -64,7 +64,6 @@ const SQL_HISTORICO = `
     LEFT JOIN compra_item i ON i.compra_id = c.id
 `
 
-// POST /compras -> registra uma compra com um ou vários produtos
 router.post("/", autenticar, async (req, res, next) => {
     let conexao
 
@@ -211,7 +210,7 @@ router.post("/", autenticar, async (req, res, next) => {
             try {
                 await conexao.rollback()
             } catch {
-                // Mantém o erro original.
+
             }
         }
 
@@ -228,7 +227,6 @@ router.post("/", autenticar, async (req, res, next) => {
     }
 })
 
-// GET /compras -> histórico do cliente autenticado
 router.get("/", autenticar, async (req, res, next) => {
     try {
         const [linhas] = await db.pool.query(
@@ -244,7 +242,6 @@ router.get("/", autenticar, async (req, res, next) => {
     }
 })
 
-// GET /compras/:id -> detalhe de uma compra do próprio cliente
 router.get("/:id", autenticar, async (req, res, next) => {
     try {
         const id = Number(req.params.id)

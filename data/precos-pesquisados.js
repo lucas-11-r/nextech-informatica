@@ -1,8 +1,3 @@
-// Preços de referência pesquisados em 22/11/2026.
-// Regra: menor preço à vista/PIX de produto NOVO em loja brasileira confiável,
-// ignorando usados, recondicionados, importados e preços parcelados.
-// `status: "estimado"` indica produto sem fonte confiável (PC NexTech ou serviço).
-
 const dados = {
     1:  { preco: 769.90,  estoque: 12,  status: "encontrado", fonte: "Terabyte - Ryzen 5 5600", observacao: "R$ 764,92 à vista" },
     2:  { preco: 299.90,  estoque: 8,   status: "encontrado", fonte: "Pichau - Athlon 3000G", observacao: "R$ 299,99 no PIX" },
@@ -60,7 +55,6 @@ const dados = {
     50: { preco: 199.90,  estoque: 999, status: "estimado",   fonte: "Dimasmicro / Cia da Informática", observacao: "Montagem padrão com testes" }
 }
 
-// "De" exibido no site: cerca de 15% acima do preço, no padrão X9,90.
 function precoAntigo(preco) {
     return Math.round(preco * 1.15) - 0.10
 }

@@ -1,5 +1,3 @@
-// Conexão com o MySQL usando as variáveis do arquivo .env.
-// npm i mysql2
 const mysql = require("mysql2/promise")
 require("dotenv").config({ quiet: true })
 

@@ -125,8 +125,6 @@ async function criarTabelas(conexao) {
         await conexao.query("SET FOREIGN_KEY_CHECKS = 1")
     }
 
-    // Estrutura antiga (peças automotivas) não tem a coluna marca.
-    // Nesse caso, recria apenas a tabela de produtos para aplicar o novo schema.
     const [existeProduto] = await conexao.query("SHOW TABLES LIKE 'produto'")
     if (existeProduto.length > 0 && !(await tabelaTemColuna(conexao, "produto", "marca"))) {
         console.log("Schema antigo de produto detectado: recriando a tabela de produtos...")
